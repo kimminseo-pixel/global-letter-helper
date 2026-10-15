@@ -50,9 +50,7 @@ export default function Home() {
             <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-6xl">
               외국에 보낼 공문
               <br />
-              격식에 맞게
-              <br />
-              한 번에
+              <span className="whitespace-nowrap">격식에 맞게 한 번에</span>
             </h1>
             <div className="relative h-10">
               <span className="hero-label-before absolute left-0 top-0 rounded-full bg-white/20 px-4 py-2 text-base font-extrabold text-white backdrop-blur">
