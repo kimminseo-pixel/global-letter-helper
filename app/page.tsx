@@ -46,7 +46,7 @@ export default function Home() {
             aria-hidden="true"
             className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent"
           />
-          <div className="absolute inset-x-0 bottom-0 flex flex-col gap-5 p-6 sm:p-12">
+          <div className="absolute inset-x-0 bottom-0 flex flex-col gap-5 p-6 pb-28 sm:p-12 sm:pb-36">
             <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-6xl">
               외국에 보낼 공문
               <br />
@@ -84,10 +84,10 @@ export default function Home() {
             key={message.title}
             className="reveal flex flex-col gap-3 rounded-[28px] bg-[rgba(7,25,76,0.05)] px-6 py-10 sm:px-12 sm:py-14"
           >
-            <h2 className="text-3xl font-extrabold leading-snug tracking-tight sm:text-5xl">
+            <h2 className="break-keep text-3xl font-extrabold leading-snug tracking-tight sm:text-5xl">
               {message.title}
             </h2>
-            <p className="max-w-2xl text-lg font-bold leading-8 text-foreground/70 sm:text-xl">
+            <p className="max-w-2xl break-keep text-lg font-bold leading-8 text-foreground/70 sm:text-xl">
               {message.body}
             </p>
           </div>
