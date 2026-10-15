@@ -112,6 +112,22 @@ export async function generateLetter(
       );
 
       const parts = response.output_parsed;
+      // 재정경제부(구 기획재정부)가 입력에 있으면 모델이 쓰기 쉬운 이전 영문 명칭을 현재 공식 영문 표기로 바로잡는다.
+      if (
+        parts !== null &&
+        [request.recipientOrg, request.senderOrg].some((org) =>
+          org.includes("재정경제부"),
+        )
+      ) {
+        const fix = (text: string) =>
+          text.replaceAll(
+            "Ministry of Strategy and Finance",
+            "Ministry of Finance and Economy",
+          );
+        parts.recipientBlock = fix(parts.recipientBlock);
+        parts.body = fix(parts.body);
+        parts.senderBlock = fix(parts.senderBlock);
+      }
       // 수신 부분에 인사말(Dear …)이 섞여 들어오면 본문 인사말과 겹치므로 그 줄만 뺀다.
       if (parts !== null && /^\s*Dear\b/i.test(parts.body)) {
         parts.recipientBlock = parts.recipientBlock
