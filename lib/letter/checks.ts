@@ -41,7 +41,7 @@ export function findDraftWarnings(language: Language, draft: string): string[] {
   const hangul = Array.from(new Set(draft.match(/[가-힣]+/g) ?? []));
   if (hangul.length > 0) {
     warnings.push(
-      `초안에 한글이 그대로 남아 있습니다: ${hangul.slice(0, 5).join(", ")}. 해당 부분을 ${LENGTH_LIMITS[language].label}로 옮겨 적어 주세요.`,
+      "이름, 호텔 이름 등 고유명사는 한 번 더 확인해 주세요.",
     );
   }
 

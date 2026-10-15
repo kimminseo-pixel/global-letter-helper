@@ -20,7 +20,7 @@ export default function WritePage() {
           href="/"
           className="rounded-xl border-2 border-foreground/30 px-5 py-2 text-base font-extrabold transition hover:bg-foreground/10"
         >
-          ← 처음으로
+          ← 홈으로
         </Link>
       </header>
 
