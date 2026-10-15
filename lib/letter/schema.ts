@@ -97,6 +97,9 @@ export type LetterRequest = z.output<typeof letterRequestSchema>;
 
 /** AI에게 받는 5개 필드 (DESIGN §2.3). 호칭·격식 이유는 최대 3개. */
 export const aiLetterSchema = z.object({
+  /** 제목: 화면의 제목 칸에 따로 보여 준다 */
+  subject: z.string().min(1),
+  /** 제목을 뺀 공문 내용(수신·본문·발신을 언어별 관례 순서로 이어 붙인 것) */
   draft: z.string().min(1),
   koreanVersion: z.string().min(1),
   reviewPoints: z.array(z.string()).max(3),

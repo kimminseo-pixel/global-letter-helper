@@ -233,6 +233,8 @@ export default function LetterForm() {
   const [result, setResult] = useState<LetterResponse | null>(null);
   /** AI 초안을 만들 때의 입력값. 이후 입력이 바뀌었는지 비교하는 데 쓴다. */
   const [generatedFor, setGeneratedFor] = useState<string | null>(null);
+  /** 결과를 만들 때 선택했던 언어(제목 줄 이름표와 위치를 정하는 데 쓴다) */
+  const [generatedLanguage, setGeneratedLanguage] = useState("");
 
   const set = (key: keyof FormState) => (value: string) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -350,6 +352,7 @@ export default function LetterForm() {
         if (parsed.success) {
           setResult(parsed.data);
           setGeneratedFor(snapshot);
+          setGeneratedLanguage(form.language);
         } else {
           setError({
             message: "초안을 만들지 못했습니다. 다시 시도해 주세요.",
@@ -637,7 +640,11 @@ export default function LetterForm() {
         ) : null}
 
         {result && !loading ? (
-          <LetterResult key={generatedFor} result={result} />
+          <LetterResult
+            key={generatedFor}
+            result={result}
+            language={generatedLanguage}
+          />
         ) : null}
 
         {!result && !loading ? (

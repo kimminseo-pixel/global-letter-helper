@@ -21,20 +21,55 @@ function Section({
   );
 }
 
-export default function LetterResult({ result }: { result: LetterResponse }) {
+/** 언어별 공문 관례에 맞춰 제목을 내용에 끼워 넣어 한 번에 복사할 전체 문서를 만든다. */
+function composeFull(language: string, subject: string, draft: string): string {
+  const title = subject.trim();
+  if (title === "") return draft;
+  const lines = draft.split("\n");
+  const insertAt = (pattern: RegExp, text: string): string => {
+    const index = lines.findIndex((line) => pattern.test(line));
+    if (index < 0) return `${text}\n\n${draft}`;
+    return [...lines.slice(0, index), text, "", ...lines.slice(index)].join("\n");
+  };
+  if (language === "en") {
+    // 영어: 호칭(Dear …) 바로 위에 Subject 줄
+    return insertAt(/^\s*(Dear|To Whom|Gentlemen|Ladies)/i, `Subject: ${title}`);
+  }
+  if (language === "ja") {
+    // 일본어: 宛名·発信者名 다음, 頭語 바로 위에 件名
+    return insertAt(/^\s*(拝啓|謹啓|前略|冠省|拝復)/, `件名：${title}`);
+  }
+  // 중국어: 标题가 맨 위
+  return `${title}\n\n${draft}`;
+}
+
+export default function LetterResult({
+  result,
+  language,
+}: {
+  result: LetterResponse;
+  language: string;
+}) {
+  const [subject, setSubject] = useState(result.subject);
   const [draft, setDraft] = useState(result.draft);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<"all" | "subject" | "draft" | null>(null);
   // 빈칸은 [ ]뿐 아니라 [발신 기관명]처럼 이름이 붙은 대괄호도 함께 센다.
   const blanks = (draft.match(/\[[^\]\n]{0,30}\]/g) ?? []).length;
 
-  async function copy() {
+  async function copy(kind: "all" | "subject" | "draft") {
+    const text =
+      kind === "all"
+        ? composeFull(language, subject, draft)
+        : kind === "subject"
+          ? subject
+          : draft;
     try {
-      await navigator.clipboard.writeText(draft);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
+      await navigator.clipboard.writeText(text);
+      setCopied(kind);
+      window.setTimeout(() => setCopied(null), 2000);
     } catch {
-      setCopied(false);
-      window.alert("복사하지 못했습니다. 초안을 직접 선택해 복사해 주세요.");
+      setCopied(null);
+      window.alert("복사하지 못했습니다. 글을 직접 선택해 복사해 주세요.");
     }
   }
 
@@ -54,12 +89,31 @@ export default function LetterResult({ result }: { result: LetterResponse }) {
         </div>
       ) : null}
 
-      <Section title="외국어 초안 (직접 수정할 수 있습니다)">
+      <Section title="제목">
+        <div className="flex flex-wrap items-center gap-3">
+          <input
+            type="text"
+            value={subject}
+            onChange={(event) => setSubject(event.target.value)}
+            aria-label="공문 제목"
+            className="h-12 min-w-0 flex-1 rounded-xl border-2 border-foreground/30 bg-background px-4 text-base focus-visible:border-accent focus-visible:outline-none"
+          />
+          <button
+            type="button"
+            onClick={() => copy("subject")}
+            className="h-12 rounded-full border-2 border-foreground/30 px-5 text-base font-extrabold transition hover:bg-foreground/10"
+          >
+            {copied === "subject" ? "복사됨 ✓" : "제목 복사"}
+          </button>
+        </div>
+      </Section>
+
+      <Section title="초안 내용 (직접 수정할 수 있습니다)">
         <textarea
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           rows={14}
-          aria-label="외국어 공문 초안"
+          aria-label="외국어 공문 초안 내용"
           className="w-full rounded-xl border-2 border-foreground/30 bg-background px-4 py-3 text-base leading-7 focus-visible:border-accent focus-visible:outline-none"
         />
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -68,13 +122,22 @@ export default function LetterResult({ result }: { result: LetterResponse }) {
               ? `비어 있는 [ ]가 ${blanks}곳 있습니다. 아래 "빠진 항목 제안"을 확인해 채워 주세요.`
               : "입력하지 않은 항목은 초안에서 생략했습니다."}
           </p>
-          <button
-            type="button"
-            onClick={copy}
-            className="h-12 rounded-full bg-accent px-7 text-base font-extrabold text-accent-foreground transition hover:opacity-90"
-          >
-            {copied ? "복사됨 ✓" : "초안 복사"}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => copy("draft")}
+              className="h-12 rounded-full border-2 border-foreground/30 px-5 text-base font-extrabold transition hover:bg-foreground/10"
+            >
+              {copied === "draft" ? "복사됨 ✓" : "내용 복사"}
+            </button>
+            <button
+              type="button"
+              onClick={() => copy("all")}
+              className="h-12 rounded-full bg-accent px-7 text-base font-extrabold text-accent-foreground transition hover:opacity-90"
+            >
+              {copied === "all" ? "복사됨 ✓" : "제목 포함 전체 복사"}
+            </button>
+          </div>
         </div>
       </Section>
 

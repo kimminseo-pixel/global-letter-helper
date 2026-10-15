@@ -26,7 +26,7 @@ export default function Home() {
     <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-16 px-4 py-6 sm:px-6 sm:py-10">
       {/* 큰 이미지 위에 짧은 메시지 한 덩어리 */}
       <section className="flex flex-col gap-8">
-        <figure className="relative aspect-[4/5] w-full overflow-hidden rounded-[28px] shadow-2xl sm:aspect-[16/9]">
+        <figure className="relative aspect-[4/5] w-full overflow-hidden rounded-[28px] shadow-2xl sm:aspect-[3/2] lg:aspect-[16/9]">
           <Image
             src="/hero-office-before.jpg"
             alt="해외로 보낼 공문을 손으로 쓰며 고민하는 젊은 한국인 여성 직장인"
@@ -46,7 +46,7 @@ export default function Home() {
             aria-hidden="true"
             className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent"
           />
-          <div className="absolute inset-x-0 bottom-0 flex flex-col gap-5 p-6 pb-28 sm:p-12 sm:pb-36">
+          <div className="absolute inset-x-0 bottom-0 flex flex-col gap-5 p-6 pb-32 sm:p-10 sm:pb-36">
             <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-6xl">
               외국에 보낼 공문
               <br />
@@ -63,7 +63,7 @@ export default function Home() {
           </div>
           <Link
             href="/write"
-            className="absolute bottom-5 right-5 inline-flex h-16 items-center justify-center whitespace-nowrap rounded-full bg-accent px-10 text-2xl font-extrabold text-accent-foreground shadow-2xl transition hover:scale-105 hover:opacity-95 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white sm:bottom-10 sm:right-10 sm:h-20 sm:px-14 sm:text-3xl"
+            className="absolute bottom-16 right-5 inline-flex h-16 items-center justify-center whitespace-nowrap rounded-2xl bg-accent px-10 text-2xl font-extrabold text-accent-foreground shadow-2xl transition hover:scale-105 hover:opacity-95 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white sm:bottom-24 sm:right-10 sm:h-20 sm:rounded-3xl sm:px-14 sm:text-3xl"
           >
             공문 작성하기
           </Link>
@@ -72,7 +72,7 @@ export default function Home() {
         <div className="flex flex-col items-start gap-5">
           <p className="max-w-2xl text-lg font-bold leading-8 text-foreground/80 sm:text-xl">
             언어, 문체, 대상, 내용만 고르고 적으면 영어·중국어·일본어 공문
-            초안과 한국어 확인본을 만들어 드려요.
+            초안과 한국어 확인본을 만들어 드려요!
           </p>
         </div>
       </section>

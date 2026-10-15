@@ -157,12 +157,14 @@ export async function generateLetter(
       const checked = aiLetterSchema.safeParse(
         complete
           ? {
-              draft: [
-                parts.recipientBlock,
-                parts.subject,
-                parts.body,
-                parts.senderBlock,
-              ]
+              subject: parts.subject.trim(),
+              // 제목을 뺀 내용을 언어별 공문 관례 순서로 이어 붙인다.
+              //  - 일본어: 宛名 → 発信者名 → 本文(頭語…結語·記·以上)
+              //  - 영어·중국어: 수신 → 본문 → 발신(맺음말·서명 / 落款)
+              draft: (request.language === "ja"
+                ? [parts.recipientBlock, parts.senderBlock, parts.body]
+                : [parts.recipientBlock, parts.body, parts.senderBlock]
+              )
                 .map((part) => part.trim())
                 .filter((part) => part !== "")
                 .join("\n\n"),
