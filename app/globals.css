@@ -3,7 +3,7 @@
 :root {
   --background: #ffffff;
   --foreground: #191f28;
-  --accent: #3182f6;
+  --accent: #1d2b64;
   --accent-foreground: #ffffff;
 }
 
@@ -20,7 +20,7 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
-    --accent: #4593fc;
+    --accent: #8fa2ee;
     --accent-foreground: #0a0a0a;
   }
 }

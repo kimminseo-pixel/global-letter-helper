@@ -1,19 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="글로벌 공문 도우미 로고">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#1e3a8a"/>
-      <stop offset="0.55" stop-color="#2563eb"/>
-      <stop offset="1" stop-color="#38bdf8"/>
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="16" fill="url(#bg)"/>
-  <!-- 지구본 -->
-  <g fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round">
-    <circle cx="30" cy="34" r="16"/>
-    <ellipse cx="30" cy="34" rx="7" ry="16"/>
-    <path d="M14 34h32"/>
+  <rect width="64" height="64" rx="16" fill="#1d2b64"/>
+  <!-- 공문(접힌 모서리가 있는 종이) -->
+  <path d="M19 12h19l9 9v31a2 2 0 0 1-2 2H19a2 2 0 0 1-2-2V14a2 2 0 0 1 2-2Z" fill="#ffffff"/>
+  <path d="M38 12v7a2 2 0 0 0 2 2h7Z" fill="#c7cfee"/>
+  <g stroke="#1d2b64" stroke-width="3" stroke-linecap="round">
+    <path d="M23 29h18"/>
+    <path d="M23 36h18"/>
+    <path d="M23 43h10"/>
   </g>
-  <!-- 공문(종이) 위로 날아가는 종이비행기 -->
-  <path d="M38 12 L56 18 L44 24 L41 31 L36 24 Z" fill="#ffffff"/>
-  <path d="M44 24 L36 24" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- 글로벌: 종이를 감싸는 궤도 -->
+  <path d="M8 44c6 8 20 12 34 8s16-14 14-24" fill="none" stroke="#7f93e0" stroke-width="3.5" stroke-linecap="round"/>
+  <circle cx="56" cy="28" r="3.5" fill="#ffffff"/>
 </svg>
