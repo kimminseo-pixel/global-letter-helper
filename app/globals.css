@@ -40,6 +40,59 @@ body {
   line-height: 1.6;
 }
 
+/* 시작 화면 대표 이미지: 손으로 쓰는 장면 → 온라인으로 쓰는 장면이 9초 주기로 부드럽게 바뀐다. */
+@keyframes hero-after {
+  0%,
+  35% {
+    opacity: 0;
+  }
+  50%,
+  88% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes hero-label-before {
+  0%,
+  35% {
+    opacity: 1;
+  }
+  45%,
+  92% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.hero-after {
+  animation: hero-after 9s ease-in-out infinite;
+}
+
+.hero-label-before {
+  animation: hero-label-before 9s ease-in-out infinite;
+}
+
+/* 움직임을 줄이도록 설정한 사용자에게는 애니메이션 없이 '이후' 장면만 보여 준다. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-after,
+  .hero-label-before {
+    animation: none;
+  }
+
+  .hero-after {
+    opacity: 1;
+  }
+
+  .hero-label-before {
+    opacity: 0;
+  }
+}
+
 input,
 textarea,
 select,

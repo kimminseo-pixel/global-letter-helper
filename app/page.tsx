@@ -32,14 +32,32 @@ export default function Home() {
           </div>
         </div>
 
-        <Image
-          src="/hero.svg"
-          alt="푸른 지구본 앞에서 인장이 찍힌 공문이 해외로 전달되는 그림"
-          width={800}
-          height={520}
-          priority
-          className="h-auto w-full rounded-3xl shadow-2xl"
-        />
+        {/* 손으로 쓰며 고민하던 모습이 온라인으로 편하게 쓰는 모습으로 천천히 바뀐다(CSS 애니메이션). */}
+        <figure className="relative aspect-[3/2] w-full overflow-hidden rounded-3xl shadow-2xl">
+          <Image
+            src="/hero-before.jpg"
+            alt="해외로 보낼 공문을 손으로 쓰며 고민하는 한국인 직장인"
+            fill
+            priority
+            sizes="(min-width: 768px) 50vw, 100vw"
+            className="object-cover"
+          />
+          <Image
+            src="/hero-after.jpg"
+            alt="같은 직장인이 웹사이트에서 공문을 편하게 작성하며 웃는 모습"
+            fill
+            sizes="(min-width: 768px) 50vw, 100vw"
+            className="hero-after object-cover"
+          />
+          <figcaption className="absolute bottom-4 left-4 flex">
+            <span className="hero-label-before rounded-full bg-black/70 px-4 py-2 text-base font-extrabold text-white">
+              손으로 쓰던 공문
+            </span>
+            <span className="hero-after hero-label-after absolute bottom-0 left-0 whitespace-nowrap rounded-full bg-accent px-4 py-2 text-base font-extrabold text-accent-foreground">
+              이제는 온라인으로 간편하게
+            </span>
+          </figcaption>
+        </figure>
       </section>
 
       <Notice />
