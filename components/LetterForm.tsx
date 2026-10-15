@@ -5,7 +5,13 @@
 // Plan SC: 필수 입력은 수신처 유형·요청 사항뿐, 입력값은 화면 메모리(React 상태)에만 둔다(브라우저 저장소 미사용).
 import { useMemo, useState, type FormEvent } from "react";
 
-import { CITIES, COUNTRIES, TITLES, countriesFor, parseDateInput } from "@/lib/letter/options";
+import {
+  CITIES,
+  COUNTRIES,
+  TITLES,
+  countriesFor,
+  parseDateInput,
+} from "@/lib/letter/options";
 import {
   CHINESE_SCRIPTS,
   FORMALITIES,
@@ -67,7 +73,8 @@ const INITIAL: FormState = {
 type ErrorState = { message: string; fieldErrors: Record<string, string[]> };
 
 const NETWORK_ERROR: ErrorState = {
-  message: "서버에 연결하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.",
+  message:
+    "서버에 연결하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.",
   fieldErrors: {},
 };
 
@@ -81,6 +88,7 @@ function ChoiceGroup({
   value,
   onChange,
   error,
+  sub,
 }: {
   legend: string;
   name: string;
@@ -88,28 +96,64 @@ function ChoiceGroup({
   value: string;
   onChange: (value: string) => void;
   error?: string;
+  /** 특정 선택지 바로 아래에 작게 붙는 하위 선택(예: 중국어 → 간체·번체) */
+  sub?: {
+    parent: string;
+    name: string;
+    options: readonly { value: string; label: string }[];
+    value: string;
+    onChange: (value: string) => void;
+    error?: string;
+  };
 }) {
   return (
     <fieldset className="flex flex-col gap-2">
       <legend className="mb-1 text-lg font-extrabold">{legend}</legend>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-start gap-2">
         {options.map((option) => (
-          <label key={option.value} className="cursor-pointer">
-            <input
-              type="radio"
-              name={name}
-              value={option.value}
-              checked={value === option.value}
-              aria-label={option.label}
-              onChange={() => onChange(option.value)}
-              className="peer sr-only"
-            />
-            <span className="inline-flex min-h-12 items-center rounded-xl border-2 border-foreground/30 px-5 text-base font-extrabold transition peer-checked:border-accent peer-checked:bg-accent peer-checked:text-accent-foreground peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent hover:border-accent">
-              {option.label}
-            </span>
-          </label>
+          <div key={option.value} className="flex flex-col items-start gap-1.5">
+            <label className="cursor-pointer">
+              <input
+                type="radio"
+                name={name}
+                value={option.value}
+                checked={value === option.value}
+                aria-label={option.label}
+                onChange={() => onChange(option.value)}
+                className="peer sr-only"
+              />
+              <span className="inline-flex min-h-12 items-center rounded-xl border-2 border-foreground/30 px-5 text-base font-extrabold transition peer-checked:border-accent peer-checked:bg-accent peer-checked:text-accent-foreground peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent hover:border-accent">
+                {option.label}
+              </span>
+            </label>
+            {sub && value === sub.parent && option.value === sub.parent ? (
+              <div className="flex gap-1.5 pl-1">
+                {sub.options.map((subOption) => (
+                  <label key={subOption.value} className="cursor-pointer">
+                    <input
+                      type="radio"
+                      name={sub.name}
+                      value={subOption.value}
+                      checked={sub.value === subOption.value}
+                      aria-label={subOption.label}
+                      onChange={() => sub.onChange(subOption.value)}
+                      className="peer sr-only"
+                    />
+                    <span className="inline-flex min-h-8 items-center rounded-lg border border-foreground/25 px-3 text-sm font-extrabold transition peer-checked:border-foreground/20 peer-checked:bg-foreground/15 peer-focus-visible:outline-2 peer-focus-visible:outline-accent hover:bg-foreground/5">
+                      {subOption.label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            ) : null}
+          </div>
         ))}
       </div>
+      {sub?.error ? (
+        <p role="alert" className="text-base font-extrabold text-red-600">
+          {sub.error}
+        </p>
+      ) : null}
       {error ? (
         <p role="alert" className="text-base font-extrabold text-red-600">
           {error}
@@ -244,7 +288,12 @@ export default function LetterForm() {
   const summary: { label: string; value: string }[] = [
     { label: "언어", value: labelOf(LANGUAGES, form.language) },
     ...(form.language === "zh"
-      ? [{ label: "글자체", value: labelOf(CHINESE_SCRIPTS, form.chineseScript) }]
+      ? [
+          {
+            label: "글자체",
+            value: labelOf(CHINESE_SCRIPTS, form.chineseScript),
+          },
+        ]
       : []),
     { label: "문체", value: labelOf(FORMALITIES, form.formality) },
     {
@@ -288,9 +337,12 @@ export default function LetterForm() {
     if (form.language === "zh" && form.chineseScript === "")
       missing.chineseScript = ["간체 또는 번체를 선택해 주세요"];
     if (form.formality === "") missing.formality = ["문체를 선택해 주세요"];
-    if (form.recipientType === "") missing.recipientType = ["대상 기관을 선택해 주세요"];
-    if (form.letterType === "") missing.letterType = ["공문 작성 목적을 선택해 주세요"];
-    if (form.purpose.trim() === "") missing.purpose = ["요청 사항을 입력해 주세요"];
+    if (form.recipientType === "")
+      missing.recipientType = ["대상 기관을 선택해 주세요"];
+    if (form.letterType === "")
+      missing.letterType = ["공문 작성 목적을 선택해 주세요"];
+    if (form.purpose.trim() === "")
+      missing.purpose = ["요청 사항을 입력해 주세요"];
     if (Object.keys(missing).length > 0) {
       setError({ message: "빠진 항목을 확인해 주세요.", fieldErrors: missing });
       return;
@@ -389,17 +441,15 @@ export default function LetterForm() {
           value={form.language}
           onChange={set("language")}
           error={fieldError("language")}
+          sub={{
+            parent: "zh",
+            name: "chineseScript",
+            options: CHINESE_SCRIPTS,
+            value: form.chineseScript,
+            onChange: set("chineseScript"),
+            error: fieldError("chineseScript"),
+          }}
         />
-        {form.language === "zh" ? (
-          <ChoiceGroup
-            legend="중국어 글자체"
-            name="chineseScript"
-            options={CHINESE_SCRIPTS}
-            value={form.chineseScript}
-            onChange={set("chineseScript")}
-            error={fieldError("chineseScript")}
-          />
-        ) : null}
         <ChoiceGroup
           legend="② 문체 (격식 수준)"
           name="formality"
@@ -683,8 +733,9 @@ export default function LetterForm() {
             )}
             <p className="text-sm text-foreground/70">
               입력한 내용을 AI가 모아서 격식에 맞는 공문으로 만들어요. 다
-              적었다면 왼쪽 아래 <span className="font-extrabold">AI로 공문 만들기</span>를
-              눌러 주세요.
+              적었다면 왼쪽 아래{" "}
+              <span className="font-extrabold">AI로 공문 만들기</span>를 눌러
+              주세요.
             </p>
           </div>
         ) : null}
