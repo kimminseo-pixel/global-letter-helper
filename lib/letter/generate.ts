@@ -112,6 +112,13 @@ export async function generateLetter(
       );
 
       const parts = response.output_parsed;
+      // 수신 부분에 인사말(Dear …)이 섞여 들어오면 본문 인사말과 겹치므로 그 줄만 뺀다.
+      if (parts !== null && /^\s*Dear\b/i.test(parts.body)) {
+        parts.recipientBlock = parts.recipientBlock
+          .split("\n")
+          .filter((line) => !/^\s*Dear\b/i.test(line))
+          .join("\n");
+      }
       // 제목·본문은 반드시 있어야 한다. 수신·발신 정보는 사용자가 입력하지 않으면 AI가 비워 둘 수
       // 있으므로(PRD: 입력이 짧아도 초안은 만든다) 빈 부분은 [ ]로 채워 구조를 유지한다.
       const complete =

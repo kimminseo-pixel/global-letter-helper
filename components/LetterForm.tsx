@@ -35,6 +35,9 @@ type FormState = {
   recipientTitle: string;
   senderOrg: string;
   senderName: string;
+  dateTime: string;
+  place: string;
+  deadline: string;
 };
 
 const INITIAL: FormState = {
@@ -52,6 +55,9 @@ const INITIAL: FormState = {
   recipientTitle: "",
   senderOrg: "",
   senderName: "",
+  dateTime: "",
+  place: "",
+  deadline: "",
 };
 
 type ErrorState = { message: string; fieldErrors: Record<string, string[]> };
@@ -245,7 +251,7 @@ export default function LetterForm() {
           />
         ) : null}
         <ChoiceGroup
-          legend="공문 작성 목적"
+          legend="④ 공문 작성 목적"
           name="letterType"
           options={LETTER_TYPES}
           value={form.letterType}
@@ -263,85 +269,115 @@ export default function LetterForm() {
         ) : null}
 
         <div className="flex flex-col gap-4">
-          <h2 className="text-lg font-extrabold">④ 내용</h2>
+          <div>
+            <h2 className="text-lg font-extrabold">⑤ 내용</h2>
+            <p className="mt-1 text-sm text-foreground/70">
+              단어나 짧은 문장으로 적어도 됩니다. 비워 둔 칸은{" "}
+              <span className="font-extrabold">[ ]</span>로 남겨 드립니다.
+            </p>
+          </div>
+
           <TextField
-            label="목적 (한 줄) *"
+            label="요청 사항 (한 줄) *"
             value={form.purpose}
             onChange={set("purpose")}
             maxLength={LIMITS.purpose}
-            placeholder="예: 전시회 참가를 위한 협조 요청"
+            placeholder="예: 11월 무역 포럼 참석 요청"
             error={fieldError("purpose")}
           />
-          <label className="flex flex-col gap-1.5">
-            <span className="text-base font-extrabold">핵심 내용</span>
-            <textarea
-              value={form.content}
-              maxLength={LIMITS.content}
-              rows={6}
-              placeholder="전달할 내용을 한국어로 자유롭게 적어 주세요."
-              onChange={(event) => set("content")(event.target.value)}
-              className="rounded-xl border-2 border-foreground/30 bg-background px-4 py-3 text-base focus-visible:border-accent focus-visible:outline-none"
-            />
-            <span className="text-right text-sm text-foreground/60">
-              {form.content.length} / {LIMITS.content}
-            </span>
-          </label>
-        </div>
 
-        <details className="rounded-2xl border-2 border-foreground/15 p-4">
-          <summary className="cursor-pointer text-base font-extrabold">
-            추가 정보 입력 (선택)
-          </summary>
-          <p className="mt-2 text-sm text-foreground/70">
-            실명·연락처 대신 직함 위주로 적는 것을 권장합니다. 비워 두면 해당
-            부분은 <span className="font-extrabold">[ ]</span>로 남기도록
-            안내합니다.
-          </p>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2">
             <TextField
-              label="수신 국가"
-              value={form.country}
-              onChange={set("country")}
-              maxLength={LIMITS.country}
-              error={fieldError("country")}
-            />
-            <TextField
-              label="수신 기관"
+              label="받는 기관"
               value={form.recipientOrg}
               onChange={set("recipientOrg")}
               maxLength={LIMITS.recipientOrg}
+              placeholder="예: 미국 상무부"
               error={fieldError("recipientOrg")}
             />
             <TextField
-              label="수신 담당자"
+              label="받는 나라"
+              value={form.country}
+              onChange={set("country")}
+              maxLength={LIMITS.country}
+              placeholder="예: 미국"
+              error={fieldError("country")}
+            />
+            <TextField
+              label="받는 사람"
               value={form.recipientName}
               onChange={set("recipientName")}
               maxLength={LIMITS.recipientName}
+              placeholder="예: John Smith"
               error={fieldError("recipientName")}
             />
             <TextField
-              label="수신자 직함"
+              label="받는 사람 직함"
               value={form.recipientTitle}
               onChange={set("recipientTitle")}
               maxLength={LIMITS.recipientTitle}
+              placeholder="예: 국장, Director"
               error={fieldError("recipientTitle")}
             />
             <TextField
-              label="발신 기관"
+              label="일시"
+              value={form.dateTime}
+              onChange={set("dateTime")}
+              maxLength={LIMITS.dateTime}
+              placeholder="예: 2026년 11월 12일 오후 2시"
+              error={fieldError("dateTime")}
+            />
+            <TextField
+              label="장소"
+              value={form.place}
+              onChange={set("place")}
+              maxLength={LIMITS.place}
+              placeholder="예: 서울 코엑스 3층"
+              error={fieldError("place")}
+            />
+            <TextField
+              label="회신·제출 기한"
+              value={form.deadline}
+              onChange={set("deadline")}
+              maxLength={LIMITS.deadline}
+              placeholder="예: 10월 31일까지"
+              error={fieldError("deadline")}
+            />
+            <TextField
+              label="보내는 기관"
               value={form.senderOrg}
               onChange={set("senderOrg")}
               maxLength={LIMITS.senderOrg}
+              placeholder="예: 한국무역협회"
               error={fieldError("senderOrg")}
             />
             <TextField
-              label="발신 담당자"
+              label="보내는 사람"
               value={form.senderName}
               onChange={set("senderName")}
               maxLength={LIMITS.senderName}
+              placeholder="예: 김민서 대리"
               error={fieldError("senderName")}
             />
           </div>
-        </details>
+
+          <label className="flex flex-col gap-1.5">
+            <span className="text-base font-extrabold">
+              기타 전달 사항 (선택)
+            </span>
+            <textarea
+              value={form.content}
+              maxLength={LIMITS.content}
+              rows={3}
+              placeholder="더 전하고 싶은 내용이 있으면 짧게 적어 주세요."
+              onChange={(event) => set("content")(event.target.value)}
+              className="rounded-xl border-2 border-foreground/30 bg-background px-4 py-3 text-base focus-visible:border-accent focus-visible:outline-none"
+            />
+          </label>
+          <p className="text-sm text-foreground/60">
+            실명·연락처 대신 직함 위주로 적는 것을 권장합니다.
+          </p>
+        </div>
 
         <button
           type="submit"
