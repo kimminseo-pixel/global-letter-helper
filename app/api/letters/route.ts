@@ -1,5 +1,5 @@
 // Design Ref: §4.1 POST /api/letters, §4.2 오류 응답 — 공문 생성 API
-// 로그인 검사(401)는 PLAN 작업 14에서 이 파일에 추가한다.
+import { requireUser } from "@/lib/auth/require-user";
 import { LetterError, generateLetter } from "@/lib/letter/generate";
 import {
   ERROR_CODES,
@@ -24,6 +24,10 @@ function errorResponse(
 }
 
 export async function POST(request: Request): Promise<Response> {
+  // Plan SC: 가입한 사용자만 접근 — 입력을 읽기 전에 로그인부터 확인한다 (DESIGN §2.1 (2)).
+  const user = await requireUser();
+  if (!user) return errorResponse("UNAUTHORIZED");
+
   let body: unknown;
   try {
     body = await request.json();
