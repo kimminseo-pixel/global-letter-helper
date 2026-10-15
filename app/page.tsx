@@ -33,8 +33,9 @@ export default function Home() {
             <span className="whitespace-nowrap">격식에 맞게 한 번에</span>
           </h1>
           <p className="break-keep text-lg font-bold leading-8 text-foreground/80 sm:text-xl">
-            언어, 문체, 대상, 내용만 고르고 적으면 영어·중국어·일본어 공문
-            초안과 한국어 확인본을 만들어 드려요!
+            정부기관·기업에 보내는 공식 서한(공문)을 언어, 문체, 대상, 내용만
+            고르고 적으면 영어·중국어·일본어 초안과 한국어 확인본으로 만들어
+            드려요!
           </p>
           <div>
             <Link
