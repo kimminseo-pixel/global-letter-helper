@@ -24,9 +24,9 @@ export default function WritePage() {
         </Link>
       </header>
 
-      <Notice />
-
       <LetterForm />
+
+      <Notice />
     </main>
   );
 }

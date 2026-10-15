@@ -119,8 +119,8 @@ export async function generateLetter(
           .filter((line) => !/^\s*Dear\b/i.test(line))
           .join("\n");
       }
-      // 제목·본문은 반드시 있어야 한다. 수신·발신 정보는 사용자가 입력하지 않으면 AI가 비워 둘 수
-      // 있으므로(PRD: 입력이 짧아도 초안은 만든다) 빈 부분은 [ ]로 채워 구조를 유지한다.
+      // 제목·본문은 반드시 있어야 한다. 수신·발신 정보는 사용자가 입력하지 않으면 비어 올 수 있고,
+      // 입력하지 않은 칸은 쓰지 않기로 했으므로(빈 대괄호를 남기지 않음) 빈 부분은 건너뛴다.
       const complete =
         parts !== null &&
         parts.subject.trim() !== "" &&
@@ -134,7 +134,8 @@ export async function generateLetter(
                 parts.body,
                 parts.senderBlock,
               ]
-                .map((part) => part.trim() || "[ ]")
+                .map((part) => part.trim())
+                .filter((part) => part !== "")
                 .join("\n\n"),
               koreanVersion: parts.koreanVersion,
               reviewPoints: parts.reviewPoints,

@@ -16,7 +16,6 @@ export const LIMITS = {
   letterTypeNote: 100,
   dateTime: 100,
   place: 100,
-  deadline: 100,
 } as const;
 
 /** 선택 항목: 코드 값, 화면 라벨 (DESIGN §2.2) */
@@ -81,10 +80,9 @@ export const letterRequestSchema = z.object({
     .min(1, "목적을 입력해 주세요")
     .max(LIMITS.purpose, `${LIMITS.purpose}자 이하로 입력해 주세요`),
   content: optionalText(LIMITS.content),
-  /** 단답 입력 칸: 일시(행사·회의 등), 장소, 기한(회신·제출) — 입력된 것만 초안에 반영한다. */
+  /** 단답 입력 칸: 일시(행사·회의 등), 장소 — 입력된 것만 초안에 반영한다. */
   dateTime: optionalText(LIMITS.dateTime),
   place: optionalText(LIMITS.place),
-  deadline: optionalText(LIMITS.deadline),
   language: z.enum(values(LANGUAGES)).default(DEFAULT_LANGUAGE),
   letterType: z.enum(values(LETTER_TYPES)).default(DEFAULT_LETTER_TYPE),
   /** 공문 작성 목적이 '기타'일 때 직접 적는 칸 */

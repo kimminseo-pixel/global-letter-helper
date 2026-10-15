@@ -35,9 +35,9 @@ type FormState = {
   recipientTitle: string;
   senderOrg: string;
   senderName: string;
-  dateTime: string;
+  date: string;
+  time: string;
   place: string;
-  deadline: string;
 };
 
 const INITIAL: FormState = {
@@ -55,10 +55,44 @@ const INITIAL: FormState = {
   recipientTitle: "",
   senderOrg: "",
   senderName: "",
-  dateTime: "",
+  date: "",
+  time: "",
   place: "",
-  deadline: "",
 };
+
+
+/** 받는 나라 선택지 (목록에 없으면 직접 입력할 수 있다) */
+const COUNTRIES = [
+  "미국", "중국", "일본", "영국", "독일", "프랑스", "캐나다", "호주", "뉴질랜드", "싱가포르",
+  "베트남", "태국", "인도네시아", "말레이시아", "필리핀", "인도", "파키스탄", "방글라데시", "몽골", "카자흐스탄",
+  "우즈베키스탄", "러시아", "튀르키예", "사우디아라비아", "아랍에미리트", "카타르", "이스라엘", "이집트", "남아프리카공화국", "나이지리아",
+  "케냐", "에티오피아", "브라질", "멕시코", "아르헨티나", "칠레", "콜롬비아", "페루", "이탈리아", "스페인",
+  "네덜란드", "벨기에", "스위스", "스웨덴", "노르웨이", "핀란드", "덴마크", "폴란드", "체코", "헝가리",
+  "오스트리아", "그리스", "포르투갈", "대만", "홍콩", "스리랑카", "네팔", "캄보디아", "라오스", "미얀마",
+];
+
+/** 받는 사람 직함 선택지 (목록에 없으면 직접 입력할 수 있다) */
+const TITLES = [
+  "장관", "차관", "대사", "총영사", "국장", "과장", "팀장", "담당관", "담당자",
+  "사장", "대표이사", "부사장", "이사", "본부장", "부장", "차장", "교수", "총장", "사무총장", "회장",
+  "Minister", "Ambassador", "Director-General", "Director", "Manager", "President", "CEO", "Professor",
+];
+
+/** 달력·시간 입력값(2026-11-12, 14:00)을 공문에 쓰기 쉬운 한국어 표기로 바꾼다. */
+function formatDateTime(date: string, time: string): string {
+  const d = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+  if (!d) return "";
+  let text = `${d[1]}년 ${Number(d[2])}월 ${Number(d[3])}일`;
+  const t = /^(\d{2}):(\d{2})$/.exec(time);
+  if (t) {
+    const hour = Number(t[1]);
+    const minute = Number(t[2]);
+    const half = hour < 12 ? "오전" : "오후";
+    const h12 = hour % 12 === 0 ? 12 : hour % 12;
+    text += ` ${half} ${h12}시${minute > 0 ? ` ${minute}분` : ""}`;
+  }
+  return text;
+}
 
 type ErrorState = { message: string; fieldErrors: Record<string, string[]> };
 
@@ -117,14 +151,18 @@ function TextField({
   value,
   onChange,
   maxLength,
-  placeholder,
+  example,
+  listId,
   error,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   maxLength: number;
-  placeholder?: string;
+  /** 입력 예시. 칸 안이 아니라 칸 오른쪽 아래에 작게 보여 준다. */
+  example?: string;
+  /** 선택지 목록(datalist) id. 칸을 눌러 고르거나 직접 입력할 수 있다. */
+  listId?: string;
   error?: string;
 }) {
   return (
@@ -134,10 +172,15 @@ function TextField({
         type="text"
         value={value}
         maxLength={maxLength}
-        placeholder={placeholder}
+        list={listId}
         onChange={(event) => onChange(event.target.value)}
         className="h-12 rounded-xl border-2 border-foreground/30 bg-background px-4 text-base focus-visible:border-accent focus-visible:outline-none"
       />
+      {example ? (
+        <span className="text-right text-xs font-bold text-foreground/50">
+          예: {example}
+        </span>
+      ) : null}
       {error ? (
         <span role="alert" className="text-sm font-extrabold text-red-600">
           {error}
@@ -166,13 +209,19 @@ export default function LetterForm() {
     setError(null);
     setResult(null);
 
+    // 달력·시간 칸은 하나의 일시 문장으로 합쳐 보낸다.
+    const { date: _date, time: _time, ...formWithoutDateParts } = form;
+    void _date;
+    void _time;
+
     try {
       const response = await fetch("/api/letters", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         // '기타'를 고르지 않은 경우의 직접 입력 칸 값은 보내지 않는다.
         body: JSON.stringify({
-          ...form,
+          ...formWithoutDateParts,
+          dateTime: formatDateTime(form.date, form.time),
           recipientTypeNote:
             form.recipientType === "other" ? form.recipientTypeNote : "",
           letterTypeNote:
@@ -246,7 +295,7 @@ export default function LetterForm() {
             value={form.recipientTypeNote}
             onChange={set("recipientTypeNote")}
             maxLength={LIMITS.recipientTypeNote}
-            placeholder="예: 국제기구, 대학, 협회, 연구소"
+            example="국제기구, 대학, 협회, 연구소"
             error={fieldError("recipientTypeNote")}
           />
         ) : null}
@@ -263,7 +312,7 @@ export default function LetterForm() {
             value={form.letterTypeNote}
             onChange={set("letterTypeNote")}
             maxLength={LIMITS.letterTypeNote}
-            placeholder="예: 계약 연장 문의"
+            example="계약 연장 문의"
             error={fieldError("letterTypeNote")}
           />
         ) : null}
@@ -272,8 +321,8 @@ export default function LetterForm() {
           <div>
             <h2 className="text-lg font-extrabold">⑤ 내용</h2>
             <p className="mt-1 text-sm text-foreground/70">
-              단어나 짧은 문장으로 적어도 됩니다. 비워 둔 칸은{" "}
-              <span className="font-extrabold">[ ]</span>로 남겨 드립니다.
+              단어나 짧은 문장으로 적어도 됩니다. 비워 둔 칸은 사용하지
+              않습니다.
             </p>
           </div>
 
@@ -282,7 +331,7 @@ export default function LetterForm() {
             value={form.purpose}
             onChange={set("purpose")}
             maxLength={LIMITS.purpose}
-            placeholder="예: 11월 무역 포럼 참석 요청"
+            example="11월 무역 포럼 참석 요청"
             error={fieldError("purpose")}
           />
 
@@ -292,7 +341,7 @@ export default function LetterForm() {
               value={form.recipientOrg}
               onChange={set("recipientOrg")}
               maxLength={LIMITS.recipientOrg}
-              placeholder="예: 미국 상무부"
+              example="미국 상무부"
               error={fieldError("recipientOrg")}
             />
             <TextField
@@ -300,7 +349,8 @@ export default function LetterForm() {
               value={form.country}
               onChange={set("country")}
               maxLength={LIMITS.country}
-              placeholder="예: 미국"
+              listId="country-list"
+              example="미국 (목록 선택 또는 직접 입력)"
               error={fieldError("country")}
             />
             <TextField
@@ -308,7 +358,7 @@ export default function LetterForm() {
               value={form.recipientName}
               onChange={set("recipientName")}
               maxLength={LIMITS.recipientName}
-              placeholder="예: John Smith"
+              example="John Smith"
               error={fieldError("recipientName")}
             />
             <TextField
@@ -316,39 +366,50 @@ export default function LetterForm() {
               value={form.recipientTitle}
               onChange={set("recipientTitle")}
               maxLength={LIMITS.recipientTitle}
-              placeholder="예: 국장, Director"
+              listId="title-list"
+              example="국장 (목록 선택 또는 직접 입력)"
               error={fieldError("recipientTitle")}
             />
-            <TextField
-              label="일시"
-              value={form.dateTime}
-              onChange={set("dateTime")}
-              maxLength={LIMITS.dateTime}
-              placeholder="예: 2026년 11월 12일 오후 2시"
-              error={fieldError("dateTime")}
-            />
+
+            <div className="flex flex-col gap-1.5 sm:col-span-2">
+              <span className="text-base font-extrabold">
+                일시 (눌러서 달력으로 선택)
+              </span>
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  type="date"
+                  aria-label="날짜"
+                  value={form.date}
+                  onChange={(event) => set("date")(event.target.value)}
+                  className="h-12 rounded-xl border-2 border-foreground/30 bg-background px-4 text-base focus-visible:border-accent focus-visible:outline-none"
+                />
+                <input
+                  type="time"
+                  aria-label="시간"
+                  value={form.time}
+                  onChange={(event) => set("time")(event.target.value)}
+                  className="h-12 rounded-xl border-2 border-foreground/30 bg-background px-4 text-base focus-visible:border-accent focus-visible:outline-none"
+                />
+              </div>
+              <span className="text-right text-xs font-bold text-foreground/50">
+                예: 2026년 11월 12일 오후 2시
+              </span>
+            </div>
+
             <TextField
               label="장소"
               value={form.place}
               onChange={set("place")}
               maxLength={LIMITS.place}
-              placeholder="예: 서울 코엑스 3층"
+              example="서울 코엑스 3층"
               error={fieldError("place")}
-            />
-            <TextField
-              label="회신·제출 기한"
-              value={form.deadline}
-              onChange={set("deadline")}
-              maxLength={LIMITS.deadline}
-              placeholder="예: 10월 31일까지"
-              error={fieldError("deadline")}
             />
             <TextField
               label="보내는 기관"
               value={form.senderOrg}
               onChange={set("senderOrg")}
               maxLength={LIMITS.senderOrg}
-              placeholder="예: 한국무역협회"
+              example="한국무역협회"
               error={fieldError("senderOrg")}
             />
             <TextField
@@ -356,7 +417,7 @@ export default function LetterForm() {
               value={form.senderName}
               onChange={set("senderName")}
               maxLength={LIMITS.senderName}
-              placeholder="예: 김민서 대리"
+              example="김민서 대리"
               error={fieldError("senderName")}
             />
           </div>
@@ -369,15 +430,28 @@ export default function LetterForm() {
               value={form.content}
               maxLength={LIMITS.content}
               rows={3}
-              placeholder="더 전하고 싶은 내용이 있으면 짧게 적어 주세요."
               onChange={(event) => set("content")(event.target.value)}
               className="rounded-xl border-2 border-foreground/30 bg-background px-4 py-3 text-base focus-visible:border-accent focus-visible:outline-none"
             />
+            <span className="text-right text-xs font-bold text-foreground/50">
+              예: 통역이 필요합니다
+            </span>
           </label>
           <p className="text-sm text-foreground/60">
             실명·연락처 대신 직함 위주로 적는 것을 권장합니다.
           </p>
         </div>
+
+        <datalist id="country-list">
+          {COUNTRIES.map((name) => (
+            <option key={name} value={name} />
+          ))}
+        </datalist>
+        <datalist id="title-list">
+          {TITLES.map((name) => (
+            <option key={name} value={name} />
+          ))}
+        </datalist>
 
         <button
           type="submit"

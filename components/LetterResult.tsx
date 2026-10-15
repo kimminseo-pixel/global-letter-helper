@@ -66,7 +66,7 @@ export default function LetterResult({ result }: { result: LetterResponse }) {
           <p className="text-sm text-foreground/70">
             {blanks > 0
               ? `비어 있는 [ ]가 ${blanks}곳 있습니다. 아래 "빠진 항목 제안"을 확인해 채워 주세요.`
-              : "비어 있는 [ ]가 없습니다."}
+              : "입력하지 않은 항목은 초안에서 생략했습니다."}
           </p>
           <button
             type="button"
