@@ -63,6 +63,26 @@ function readModel(): string {
   return process.env.OPENAI_MODEL || DEFAULT_MODEL;
 }
 
+/**
+ * 초안에 섞여 든 대괄호 표시(예: [Country unspecified], [ ])를 지우고,
+ * 그 때문에 비어 버린 줄은 없앤다. 확신이 없는 정보는 초안에 남기지 않기로 했다.
+ */
+export function stripPlaceholders(text: string): string {
+  return text
+    .split("\n")
+    .flatMap((line) => {
+      if (line.trim() === "") return [line];
+      const withoutMarks = line.replace(/\[[^\]\n]*\]|【[^】\n]*】/g, "");
+      // 지운 표시가 없던 줄은 손대지 않는다(「Dear Sir,」의 쉼표 등을 지키기 위해).
+      if (withoutMarks === line) return [line];
+      const cleaned = withoutMarks
+        .replace(/[\s,;、，]+$/u, "")
+        .replace(/\s{2,}/g, " ");
+      return cleaned.trim() === "" ? [] : [cleaned];
+    })
+    .join("\n");
+}
+
 /** OpenAI 오류를 화면용 오류 코드로 바꾼다. 요청·응답 내용은 로그에 남기지 않는다. */
 function toLetterError(error: unknown): LetterError {
   if (error instanceof LetterError) return error;
@@ -127,6 +147,12 @@ export async function generateLetter(
         parts.recipientBlock = fix(parts.recipientBlock);
         parts.body = fix(parts.body);
         parts.senderBlock = fix(parts.senderBlock);
+      }
+      if (parts !== null) {
+        parts.recipientBlock = stripPlaceholders(parts.recipientBlock);
+        parts.subject = stripPlaceholders(parts.subject);
+        parts.body = stripPlaceholders(parts.body);
+        parts.senderBlock = stripPlaceholders(parts.senderBlock);
       }
       // 수신 부분에 인사말(Dear …)이 섞여 들어오면 본문 인사말과 겹치므로 그 줄만 뺀다.
       if (parts !== null && /^\s*Dear\b/i.test(parts.body)) {
