@@ -6,7 +6,6 @@
 import { useMemo, useState, type FormEvent } from "react";
 
 import { CITIES, COUNTRIES, TITLES, parseDateInput } from "@/lib/letter/options";
-import { buildPreview } from "@/lib/letter/preview";
 import {
   FORMALITIES,
   LANGUAGES,
@@ -247,25 +246,43 @@ export default function LetterForm() {
   const snapshot = JSON.stringify(form);
   const stale = result !== null && generatedFor !== snapshot;
 
-  const preview = useMemo(
-    () =>
-      buildPreview({
-        language: form.language,
-        letterType: form.letterType,
-        letterTypeNote: form.letterTypeNote,
-        purpose: form.purpose,
-        country: form.country,
-        recipientOrg: form.recipientOrg,
-        recipientName: form.recipientName,
-        recipientTitle: form.recipientTitle,
-        date,
-        place,
-        senderOrg: form.senderOrg,
-        senderName: form.senderName,
-        content: form.content,
-      }),
-    [form, date, place],
-  );
+  /** 입력한 내용을 한눈에 모아 보여 주는 요약 (AI가 이 내용으로 공문을 만든다) */
+  const labelOf = (
+    items: readonly { value: string; label: string }[],
+    value: string,
+  ) => items.find((item) => item.value === value)?.label ?? "";
+  const summary: { label: string; value: string }[] = [
+    { label: "언어", value: labelOf(LANGUAGES, form.language) },
+    { label: "문체", value: labelOf(FORMALITIES, form.formality) },
+    {
+      label: "대상 기관",
+      value: [
+        labelOf(RECIPIENT_TYPES, form.recipientType),
+        form.recipientType === "other" ? form.recipientTypeNote.trim() : "",
+      ]
+        .filter(Boolean)
+        .join(" · "),
+    },
+    {
+      label: "공문 작성 목적",
+      value: [
+        labelOf(LETTER_TYPES, form.letterType),
+        form.letterType === "other" ? form.letterTypeNote.trim() : "",
+      ]
+        .filter(Boolean)
+        .join(" · "),
+    },
+    { label: "요청 사항", value: form.purpose.trim() },
+    { label: "받는 나라", value: form.country.trim() },
+    { label: "받는 기관", value: form.recipientOrg.trim() },
+    { label: "받는 사람", value: form.recipientName.trim() },
+    { label: "받는 사람 직함", value: form.recipientTitle.trim() },
+    { label: "일시", value: date.kind === "ok" ? date.korean : "" },
+    { label: "장소", value: place },
+    { label: "보내는 기관", value: form.senderOrg.trim() },
+    { label: "보내는 사람", value: form.senderName.trim() },
+    { label: "기타 전달 사항", value: form.content.trim() },
+  ].filter((row) => row.value !== "");
 
   const fieldError = (key: string) => error?.fieldErrors[key]?.[0];
 
@@ -582,7 +599,7 @@ export default function LetterForm() {
           disabled={loading}
           className="h-14 rounded-full bg-accent text-xl font-extrabold text-accent-foreground shadow-lg transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {loading ? "초안을 만드는 중입니다…" : "초안 만들기"}
+          {loading ? "AI가 공문을 만드는 중이에요…" : "AI로 공문 만들기"}
         </button>
       </form>
 
@@ -605,7 +622,7 @@ export default function LetterForm() {
 
         {loading ? (
           <div className="rounded-2xl border-2 border-foreground/15 p-8 text-center text-lg font-extrabold">
-            초안을 만드는 중입니다… 보통 10초 안팎이 걸립니다.
+            AI가 입력한 내용으로 공문을 만들고 있어요. 보통 10초 안팎이 걸려요.
           </div>
         ) : null}
 
@@ -614,8 +631,8 @@ export default function LetterForm() {
             role="status"
             className="rounded-2xl border-2 border-amber-500/60 bg-amber-500/10 p-4 text-base font-extrabold"
           >
-            입력이 바뀌었습니다. 아래 초안은 이전 입력 기준입니다. 새 입력을
-            반영하려면 초안 만들기를 다시 눌러 주세요.
+            입력이 바뀌었어요. 아래 공문은 이전 입력 기준이에요. 새 입력을
+            반영하려면 AI로 공문 만들기를 다시 눌러 주세요.
           </div>
         ) : null}
 
@@ -624,26 +641,36 @@ export default function LetterForm() {
         ) : null}
 
         {!result && !loading ? (
-          <div className="flex flex-col gap-3 rounded-2xl border-2 border-foreground/15 p-5">
+          <div className="flex flex-col gap-4 rounded-2xl border-2 border-foreground/15 p-5">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="text-lg font-extrabold">공문 초안</h2>
+              <h2 className="text-lg font-extrabold">입력 내용 요약</h2>
               <span className="rounded-full bg-accent/15 px-3 py-1 text-xs font-extrabold text-accent">
-                입력하는 대로 작성됩니다
+                AI가 공문으로 만들어요
               </span>
             </div>
-            {preview.trim() === "" ? (
+            {summary.length === 0 ? (
               <div className="flex min-h-64 items-center justify-center rounded-xl border-2 border-dashed border-foreground/25 p-6 text-center text-base text-foreground/60">
-                왼쪽에서 선택하고 입력하면 이곳에 공문이 차례로 작성됩니다.
+                왼쪽에서 선택하고 입력하면 이곳에 내용이 모여요.
               </div>
             ) : (
-              <pre className="min-h-64 whitespace-pre-wrap break-words rounded-xl bg-foreground/5 p-4 font-sans text-base leading-7">
-                {preview}
-              </pre>
+              <dl className="flex flex-col divide-y divide-foreground/10 rounded-xl bg-foreground/5">
+                {summary.map((row) => (
+                  <div
+                    key={row.label}
+                    className="grid grid-cols-[7.5rem_1fr] gap-3 px-4 py-3"
+                  >
+                    <dt className="text-sm font-extrabold text-foreground/60">
+                      {row.label}
+                    </dt>
+                    <dd className="break-words text-base">{row.value}</dd>
+                  </div>
+                ))}
+              </dl>
             )}
             <p className="text-sm text-foreground/70">
-              입력한 내용을 공문 순서(수신 → 제목 → 본문 → 발신)로 배치한
-              미리보기입니다. 초안 만들기를 누르면 AI가 격식에 맞게 다듬은
-              초안으로 바뀝니다.
+              입력한 내용을 AI가 모아서 격식에 맞는 공문으로 만들어요. 다
+              적었다면 왼쪽 아래 <span className="font-extrabold">AI로 공문 만들기</span>를
+              눌러 주세요.
             </p>
           </div>
         ) : null}

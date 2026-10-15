@@ -25,8 +25,8 @@ export default function WritePage() {
       </header>
 
       <p className="text-lg font-extrabold">
-        왼쪽에서 언어·문체·대상을 고르고 내용을 적은 뒤 초안 만들기를 눌러
-        주세요.
+        왼쪽에서 언어·문체·대상을 고르고 내용을 적은 뒤 AI로 공문 만들기를
+        눌러 주세요.
       </p>
 
       <LetterForm />

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Jua } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Sans_KR } from "next/font/google";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import "./globals.css";
@@ -14,10 +14,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-/** 둥근 글씨체. 한글 글자 모양은 필요한 만큼만 내려받는다. */
-const rounded = Jua({
-  weight: "400",
-  variable: "--font-rounded",
+/** 신뢰감 있는 고딕체(본문·제목 공통). 한글 글자 모양은 필요한 만큼만 내려받는다. */
+const sans = Noto_Sans_KR({
+  weight: ["400", "500", "700", "800"],
+  variable: "--font-sans-kr",
   display: "swap",
   preload: false,
 });
@@ -32,7 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="ko"
-      className={`${geistSans.variable} ${geistMono.variable} ${rounded.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${sans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <SiteHeader />

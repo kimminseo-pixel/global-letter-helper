@@ -33,12 +33,11 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  /* 둥근 글씨체(주아). 이미 굵은 글씨체라 브라우저가 한 번 더 굵게 만들지 않도록 막는다. */
+  /* 신뢰감 있는 고딕체(본문·제목 공통). 글씨는 전체를 볼드로 유지한다. */
   font-family:
-    var(--font-rounded), "Apple SD Gothic Neo", "Malgun Gothic",
-    "Noto Sans KR", system-ui, sans-serif;
+    var(--font-sans-kr), "Apple SD Gothic Neo", "Malgun Gothic",
+    system-ui, sans-serif;
   font-weight: 700;
-  font-synthesis: none;
   line-height: 1.6;
 }
 

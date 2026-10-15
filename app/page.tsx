@@ -21,17 +21,6 @@ const MESSAGES = [
   },
 ] as const;
 
-function StartButton({ className = "" }: { className?: string }) {
-  return (
-    <Link
-      href="/write"
-      className={`inline-flex h-14 shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-accent px-9 text-xl font-extrabold text-accent-foreground shadow-lg transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent ${className}`}
-    >
-      공문 작성하기
-    </Link>
-  );
-}
-
 export default function Home() {
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-16 px-4 py-6 sm:px-6 sm:py-10">
@@ -105,13 +94,6 @@ export default function Home() {
             </p>
           </div>
         ))}
-      </section>
-
-      <section className="reveal flex flex-col items-center gap-6 py-6 text-center">
-        <h2 className="text-3xl font-extrabold leading-snug tracking-tight sm:text-5xl">
-          지금 바로 시작해 볼까요
-        </h2>
-        <StartButton />
       </section>
 
       <section
