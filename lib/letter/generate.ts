@@ -6,6 +6,7 @@ import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 import * as z from "zod";
 
+import { findDraftWarnings } from "./checks";
 import { buildLetterPrompt } from "./prompt";
 import {
   aiLetterSchema,
@@ -31,8 +32,13 @@ export class LetterError extends Error {
 
 // OpenAI 구조화 출력은 글자 수·개수 제약을 지원하지 않을 수 있어,
 // AI에는 제약 없는 형태를 요구하고 받은 뒤 aiLetterSchema로 다시 검증한다.
+// Plan SC: 구조(수신 → 제목 → 본문 → 발신) 고정 — 초안을 한 덩어리로 받지 않고 네 부분으로 받아
+// 서버가 고정된 순서로 이어 붙인다. 어느 언어에서도 순서가 바뀌거나 빠지지 않는다.
 const aiWireSchema = z.object({
-  draft: z.string(),
+  recipientBlock: z.string(),
+  subject: z.string(),
+  body: z.string(),
+  senderBlock: z.string(),
   koreanVersion: z.string(),
   reviewPoints: z.array(z.string()),
   uncertain: z.array(z.object({ phrase: z.string(), reason: z.string() })),
@@ -107,10 +113,34 @@ export async function generateLetter(
         { timeout: Math.min(AI_CALL_TIMEOUT_MS, remaining) },
       );
 
-      const checked = aiLetterSchema.safeParse(response.output_parsed);
+      const parts = response.output_parsed;
+      const complete =
+        parts !== null &&
+        [parts.recipientBlock, parts.subject, parts.body, parts.senderBlock].every(
+          (part) => part.trim() !== "",
+        );
+      const checked = aiLetterSchema.safeParse(
+        complete
+          ? {
+              draft: [
+                parts.recipientBlock,
+                parts.subject,
+                parts.body,
+                parts.senderBlock,
+              ]
+                .map((part) => part.trim())
+                .join("\n\n"),
+              koreanVersion: parts.koreanVersion,
+              reviewPoints: parts.reviewPoints,
+              uncertain: parts.uncertain,
+              missingItems: parts.missingItems,
+            }
+          : null,
+      );
       if (checked.success) {
-        // 분량 경고(warnings)는 분량 규칙을 넣는 작업 3에서 채운다.
-        return { ...checked.data, warnings: [] };
+        // Plan SC: 분량·줄임말 기준을 어기면 거절하지 않고 경고로 알린다 (DESIGN §5).
+        const warnings = findDraftWarnings(request.language, checked.data.draft);
+        return { ...checked.data, warnings };
       }
       // 형식 불일치: 다음 반복에서 1회 재시도
     } catch (error) {
