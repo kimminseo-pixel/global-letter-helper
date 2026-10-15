@@ -121,10 +121,23 @@ export async function generateLetter(
       }
       // 제목·본문은 반드시 있어야 한다. 수신·발신 정보는 사용자가 입력하지 않으면 비어 올 수 있고,
       // 입력하지 않은 칸은 쓰지 않기로 했으므로(빈 대괄호를 남기지 않음) 빈 부분은 건너뛴다.
+      // 첫 시도에서는 입력한 수신·발신 정보가 초안에서 빠졌는지도 확인해, 빠졌으면 한 번 다시 만든다.
+      const requiresRecipient =
+        attempt === 1 &&
+        [request.recipientOrg, request.recipientName, request.recipientTitle].some(
+          (value) => value.trim() !== "",
+        );
+      const requiresSender =
+        attempt === 1 &&
+        [request.senderOrg, request.senderName].some(
+          (value) => value.trim() !== "",
+        );
       const complete =
         parts !== null &&
         parts.subject.trim() !== "" &&
-        parts.body.trim() !== "";
+        parts.body.trim() !== "" &&
+        (!requiresRecipient || parts.recipientBlock.trim() !== "") &&
+        (!requiresSender || parts.senderBlock.trim() !== "");
       const checked = aiLetterSchema.safeParse(
         complete
           ? {

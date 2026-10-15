@@ -4,24 +4,30 @@ import Link from "next/link";
 
 import Notice from "@/components/Notice";
 
+/** 이용 방법: 공공기관 누리집의 "한눈에 보기"처럼 번호·제목·설명 카드로 안내한다. */
+const STEPS = [
+  {
+    no: "01",
+    title: "언어와 문체 선택",
+    body: "영어·중국어·일본어 중 언어를 고르고, 일반 업무·공식·최고 격식 중 문체를 고릅니다.",
+  },
+  {
+    no: "02",
+    title: "대상과 내용 입력",
+    body: "받는 기관 유형과 공문 작성 목적을 고르고, 단어나 짧은 문장으로 내용을 적습니다.",
+  },
+  {
+    no: "03",
+    title: "초안과 한국어 확인본",
+    body: "격식에 맞는 외국어 초안과 같은 내용의 한국어 확인본, 검토 포인트를 함께 확인합니다.",
+  },
+] as const;
+
 export default function Home() {
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4 py-10 sm:px-6 sm:py-16">
+    <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-10 px-4 py-10 sm:px-6 sm:py-16">
       <section className="grid items-center gap-10 md:grid-cols-2">
         <div className="flex flex-col gap-6">
-          <div className="flex items-center gap-3">
-            <Image
-              src="/logo.svg"
-              alt="글로벌 공문 도우미 로고"
-              width={44}
-              height={44}
-              priority
-              className="h-11 w-11 rounded-xl"
-            />
-            <p className="text-xl font-extrabold tracking-wide text-accent">
-              글로벌 공문 도우미
-            </p>
-          </div>
           <h1 className="text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
             외국에 보낼 공문
             <br />
@@ -70,7 +76,40 @@ export default function Home() {
         </figure>
       </section>
 
-      <Notice />
+      <section aria-labelledby="steps-title" className="flex flex-col gap-4">
+        <h2
+          id="steps-title"
+          className="border-b-2 border-foreground/15 pb-2 text-2xl font-extrabold tracking-tight"
+        >
+          이용 방법
+        </h2>
+        <ol className="grid gap-4 md:grid-cols-3">
+          {STEPS.map((step) => (
+            <li
+              key={step.no}
+              className="flex flex-col gap-2 rounded-2xl border-2 border-foreground/15 p-5"
+            >
+              <span className="text-sm font-extrabold tracking-widest text-accent">
+                STEP {step.no}
+              </span>
+              <h3 className="text-xl font-extrabold">{step.title}</h3>
+              <p className="text-base leading-7 text-foreground/80">
+                {step.body}
+              </p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section id="guide" aria-labelledby="guide-title" className="flex flex-col gap-4 scroll-mt-6">
+        <h2
+          id="guide-title"
+          className="border-b-2 border-foreground/15 pb-2 text-2xl font-extrabold tracking-tight"
+        >
+          이용 안내
+        </h2>
+        <Notice />
+      </section>
     </main>
   );
 }

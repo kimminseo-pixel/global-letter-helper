@@ -28,7 +28,7 @@ function formatDate(language: string, date: ParsedDate): string {
   if (date.kind !== "ok") return "";
   // 언어를 아직 고르지 않았으면 영어 형식으로 보여 준다.
   if (language === "en" || language === "") {
-    return `${MONTHS_EN[date.month - 1]} ${date.day}, ${date.year}`;
+    return `${date.day} ${MONTHS_EN[date.month - 1]} ${date.year}`;
   }
   return `${date.year}年${date.month}月${date.day}日`;
 }
