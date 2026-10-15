@@ -208,6 +208,17 @@ export default function LetterResult({
           </ul>
         </Section>
       ) : null}
+
+      <Section title="유의사항">
+        <ul className="list-disc pl-5 text-base leading-7">
+          <li>
+            이름·기관명·직함·장소 같은 고유명사는 철자와 표기가 맞는지 한 번 더
+            확인해 주세요.
+          </li>
+          <li>날짜·시간·금액 등 숫자도 입력한 내용과 같은지 확인해 주세요.</li>
+          <li>AI가 만든 초안이므로 보내기 전에 꼭 담당자가 검토해 주세요.</li>
+        </ul>
+      </Section>
     </div>
   );
 }
