@@ -14,7 +14,7 @@ export default function SiteHeader() {
         AI가 만든 초안이에요. 보내기 전에 꼭 확인해 주세요.
       </div>
       <div className="bg-foreground/5">
-        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-2 sm:px-6">
           <Link href="/" className="flex items-center gap-3">
             <Image
               src="/logo.svg"
