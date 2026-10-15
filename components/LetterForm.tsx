@@ -49,6 +49,18 @@ type FormState = {
   content: string;
 };
 
+/** 한 번에 여러 곳에 보낼 때 추가하는 받는 곳 */
+type Recipient = {
+  country: string;
+  org: string;
+  name: string;
+  title: string;
+};
+
+const EMPTY_RECIPIENT: Recipient = { country: "", org: "", name: "", title: "" };
+/** 기본 받는 곳을 포함해 최대 5곳 (호출 횟수 제한 안에서 한 번에 만든다) */
+const MAX_EXTRAS = 4;
+
 const INITIAL: FormState = {
   language: "",
   chineseScript: "",
@@ -259,7 +271,13 @@ export default function LetterForm() {
   const [form, setForm] = useState<FormState>(INITIAL);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ErrorState | null>(null);
-  const [result, setResult] = useState<LetterResponse | null>(null);
+  const [extras, setExtras] = useState<Recipient[]>([]);
+  const [results, setResults] = useState<
+    { label: string; result: LetterResponse }[]
+  >([]);
+  const [active, setActive] = useState(0);
+  const [failedLabels, setFailedLabels] = useState<string[]>([]);
+  const result = results[active]?.result ?? null;
   /** AI 초안을 만들 때의 입력값. 이후 입력이 바뀌었는지 비교하는 데 쓴다. */
   const [generatedFor, setGeneratedFor] = useState<string | null>(null);
   /** 결과를 만들 때 선택했던 언어(제목 줄 이름표와 위치를 정하는 데 쓴다) */
@@ -278,7 +296,7 @@ export default function LetterForm() {
     .filter((part) => part !== "")
     .join(", ");
 
-  const snapshot = JSON.stringify(form);
+  const snapshot = JSON.stringify({ form, extras });
   const stale = result !== null && generatedFor !== snapshot;
 
   /** 입력한 내용을 한눈에 모아 보여 주는 요약 (AI가 이 내용으로 공문을 만든다) */
@@ -320,6 +338,13 @@ export default function LetterForm() {
     { label: "받는 기관", value: form.recipientOrg.trim() },
     { label: "받는 사람", value: form.recipientName.trim() },
     { label: "받는 사람 직함", value: form.recipientTitle.trim() },
+    {
+      label: "추가 받는 곳",
+      value: extras
+        .map((r) => r.org.trim() || r.name.trim() || r.title.trim())
+        .filter(Boolean)
+        .join(", "),
+    },
     { label: "일시", value: date.kind === "ok" ? date.korean : "" },
     { label: "장소", value: place },
     { label: "보내는 기관", value: form.senderOrg.trim() },
@@ -344,6 +369,12 @@ export default function LetterForm() {
       missing.letterType = ["공문 작성 목적을 선택해 주세요"];
     if (form.purpose.trim() === "")
       missing.purpose = ["요청 사항을 입력해 주세요"];
+    if (
+      extras.some((r) => [r.org, r.name, r.title].every((t) => t.trim() === ""))
+    )
+      missing.extras = [
+        "추가한 받는 곳에도 받는 기관이나 받는 사람을 적어 주세요",
+      ];
     if (Object.keys(missing).length > 0) {
       setError({ message: "빠진 항목을 확인해 주세요.", fieldErrors: missing });
       return;
@@ -363,9 +394,27 @@ export default function LetterForm() {
 
     setLoading(true);
     setError(null);
-    setResult(null);
+    setResults([]);
+    setFailedLabels([]);
 
-    try {
+    const recipients: Recipient[] = [
+      {
+        country: form.country,
+        org: form.recipientOrg,
+        name: form.recipientName,
+        title: form.recipientTitle,
+      },
+      ...extras,
+    ];
+    const labelFor = (r: Recipient, index: number) =>
+      r.org.trim() || r.name.trim() || r.title.trim() || `받는 곳 ${index + 1}`;
+
+    /** 한 곳에 보낼 공문을 만든다. 성공하면 결과, 실패하면 오류 상태를 돌려준다. */
+    const requestOne = async (
+      r: Recipient,
+    ): Promise<
+      { ok: true; data: LetterResponse } | { ok: false; error: ErrorState }
+    > => {
       const response = await fetch("/api/letters", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -382,10 +431,10 @@ export default function LetterForm() {
           letterTypeNote:
             form.letterType === "other" ? form.letterTypeNote : "",
           purpose: form.purpose,
-          country: form.country,
-          recipientOrg: form.recipientOrg,
-          recipientName: form.recipientName,
-          recipientTitle: form.recipientTitle,
+          country: r.country,
+          recipientOrg: r.org,
+          recipientName: r.name,
+          recipientTitle: r.title,
           dateTime: date.kind === "ok" ? date.korean : "",
           place,
           senderOrg: form.senderOrg,
@@ -394,32 +443,55 @@ export default function LetterForm() {
         }),
       });
       const body: unknown = await response.json().catch(() => null);
-
       if (response.ok) {
         const parsed = letterResponseSchema.safeParse(body);
-        if (parsed.success) {
-          setResult(parsed.data);
-          setGeneratedFor(snapshot);
-          setGeneratedLanguage(form.language);
-        } else {
-          setError({
+        if (parsed.success) return { ok: true, data: parsed.data };
+        return {
+          ok: false,
+          error: {
             message: "초안을 만들지 못했습니다. 다시 시도해 주세요.",
             fieldErrors: {},
-          });
+          },
+        };
+      }
+      const parsed = errorResponseSchema.safeParse(body);
+      return {
+        ok: false,
+        error: parsed.success
+          ? {
+              message: parsed.data.error.message,
+              fieldErrors: parsed.data.error.fieldErrors ?? {},
+            }
+          : {
+              message: "일시적인 오류입니다. 다시 시도해 주세요.",
+              fieldErrors: {},
+            },
+      };
+    };
+
+    try {
+      const outcomes = await Promise.all(
+        recipients.map((r) => requestOne(r)),
+      );
+      const done: { label: string; result: LetterResponse }[] = [];
+      const failed: string[] = [];
+      let firstError: ErrorState | null = null;
+      outcomes.forEach((outcome, index) => {
+        const label = labelFor(recipients[index], index);
+        if (outcome.ok) done.push({ label, result: outcome.data });
+        else {
+          failed.push(label);
+          firstError ??= outcome.error;
         }
-      } else {
-        const parsed = errorResponseSchema.safeParse(body);
-        setError(
-          parsed.success
-            ? {
-                message: parsed.data.error.message,
-                fieldErrors: parsed.data.error.fieldErrors ?? {},
-              }
-            : {
-                message: "일시적인 오류입니다. 다시 시도해 주세요.",
-                fieldErrors: {},
-              },
-        );
+      });
+      if (done.length > 0) {
+        setResults(done);
+        setActive(0);
+        setFailedLabels(failed);
+        setGeneratedFor(snapshot);
+        setGeneratedLanguage(form.language);
+      } else if (firstError !== null) {
+        setError(firstError);
       }
     } catch {
       setError(NETWORK_ERROR);
@@ -522,6 +594,17 @@ export default function LetterForm() {
             error={fieldError("purpose")}
           />
 
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-base font-extrabold">받는 곳 1</span>
+            <button
+              type="button"
+              disabled={extras.length >= MAX_EXTRAS}
+              onClick={() => setExtras((prev) => [...prev, { ...EMPTY_RECIPIENT }])}
+              className="h-10 rounded-xl border-2 border-accent px-4 text-base font-extrabold text-accent transition hover:bg-accent/10 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              + 추가하기
+            </button>
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <ComboField
               label="받는 나라"
@@ -555,6 +638,71 @@ export default function LetterForm() {
               onChange={set("recipientTitle")}
               maxLength={LIMITS.recipientTitle}
             />
+
+            {extras.map((r, index) => (
+              <div
+                key={index}
+                className="grid gap-3 rounded-2xl border-2 border-foreground/15 p-4 sm:col-span-2 sm:grid-cols-2"
+              >
+                <div className="flex items-center justify-between sm:col-span-2">
+                  <span className="text-base font-extrabold">
+                    받는 곳 {index + 2}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setExtras((prev) => prev.filter((_, i) => i !== index))
+                    }
+                    className="h-9 rounded-xl border-2 border-foreground/30 px-3 text-sm font-extrabold transition hover:bg-foreground/10"
+                  >
+                    삭제
+                  </button>
+                </div>
+                {(
+                  [
+                    ["country", "받는 나라"],
+                    ["org", "받는 기관"],
+                    ["name", "받는 사람"],
+                    ["title", "받는 사람 직함"],
+                  ] as const
+                ).map(([key, label]) => (
+                  <label key={key} className="flex flex-col gap-1.5">
+                    <span className="text-sm font-extrabold">{label}</span>
+                    <input
+                      type="text"
+                      value={r[key]}
+                      maxLength={100}
+                      autoComplete="off"
+                      list={
+                        key === "country"
+                          ? "recipient-country-list"
+                          : key === "title"
+                            ? "recipient-title-list"
+                            : undefined
+                      }
+                      onChange={(event) =>
+                        setExtras((prev) =>
+                          prev.map((item, i) =>
+                            i === index
+                              ? { ...item, [key]: event.target.value }
+                              : item,
+                          ),
+                        )
+                      }
+                      className={FIELD_CLASS}
+                    />
+                  </label>
+                ))}
+              </div>
+            ))}
+            {fieldError("extras") ? (
+              <p
+                role="alert"
+                className="text-sm font-extrabold text-red-600 sm:col-span-2"
+              >
+                {fieldError("extras")}
+              </p>
+            ) : null}
 
             <div className="sm:col-span-2">
               <TextField
@@ -708,9 +856,39 @@ export default function LetterForm() {
           </div>
         ) : null}
 
+        {results.length > 1 && !loading ? (
+          <div role="tablist" className="flex flex-wrap gap-2">
+            {results.map((item, index) => (
+              <button
+                key={`${item.label}-${index}`}
+                type="button"
+                role="tab"
+                aria-selected={active === index}
+                onClick={() => setActive(index)}
+                className={`h-11 rounded-xl border-2 px-4 text-base font-extrabold transition ${
+                  active === index
+                    ? "border-foreground/20 bg-foreground/15"
+                    : "border-foreground/30 hover:bg-foreground/5"
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        ) : null}
+
+        {failedLabels.length > 0 && !loading ? (
+          <div
+            role="alert"
+            className="rounded-2xl border-2 border-red-500/60 bg-red-500/10 p-4 text-base font-extrabold"
+          >
+            {failedLabels.join(", ")} 공문은 만들지 못했어요. 다시 눌러 주세요.
+          </div>
+        ) : null}
+
         {result && !loading ? (
           <LetterResult
-            key={generatedFor}
+            key={`${generatedFor}-${active}`}
             result={result}
             language={generatedLanguage}
           />
