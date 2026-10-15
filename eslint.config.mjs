@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // 삭제 대기 폴더(CLAUDE.md "변경 보고·삭제")는 검사하지 않는다.
+    "trash-can/**",
   ]),
 ]);
 
