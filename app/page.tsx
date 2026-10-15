@@ -2,7 +2,7 @@
 // 구성: 큰 한 줄 메시지(이미지 위) → 한 번에 하나씩 전하는 안내 블록 → 이용 안내. 말투는 "~해요" 체로 쓴다.
 import Link from "next/link";
 
-import HeroAnimation from "@/components/HeroAnimation";
+import HeroPhoto from "@/components/HeroPhoto";
 import Notice from "@/components/Notice";
 
 /** 한 블록에 메시지 하나씩: 굵은 제목 + 짧은 설명 */
@@ -47,7 +47,7 @@ export default function Home() {
           </div>
         </div>
 
-        <HeroAnimation />
+        <HeroPhoto />
       </section>
 
       {/* 한 줄에 세 가지 메시지, 그 아래 이용 안내까지 한 화면에 보이게 배치 */}
