@@ -4,6 +4,7 @@
 // 사용자 입력과 AI 출력은 텍스트로만 그린다(HTML로 삽입하지 않음).
 import { useRef, useState } from "react";
 
+import { buildDocx, safeFileName } from "@/lib/letter/export-docx";
 import type { LetterResponse } from "@/lib/letter/schema";
 
 function Section({
@@ -82,6 +83,27 @@ export default function LetterResult({
     }
   }
 
+  /** Word 파일(.docx)로 저장한다. 한글에서도 열 수 있다. */
+  async function saveWord() {
+    setShowCopyWarning(true);
+    if (warningTimer.current !== null) window.clearTimeout(warningTimer.current);
+    warningTimer.current = window.setTimeout(
+      () => setShowCopyWarning(false),
+      12000,
+    );
+    try {
+      const blob = await buildDocx(language, composeFull(language, subject, draft));
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = safeFileName(subject);
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      window.alert("파일을 만들지 못했습니다. 복사해서 붙여 넣어 주세요.");
+    }
+  }
+
   return (
     <div className="flex flex-col gap-4">
       {result.warnings.length > 0 ? (
@@ -110,7 +132,7 @@ export default function LetterResult({
           <button
             type="button"
             onClick={() => copy("subject")}
-            className="h-12 rounded-full border-2 border-foreground/30 px-5 text-base font-extrabold transition hover:bg-foreground/10"
+            className="h-12 rounded-xl border-2 border-foreground/30 px-5 text-base font-extrabold transition hover:bg-foreground/10"
           >
             {copied === "subject" ? "복사됨 ✓" : "제목 복사"}
           </button>
@@ -135,16 +157,23 @@ export default function LetterResult({
             <button
               type="button"
               onClick={() => copy("draft")}
-              className="h-12 rounded-full border-2 border-foreground/30 px-5 text-base font-extrabold transition hover:bg-foreground/10"
+              className="h-12 rounded-xl border-2 border-foreground/30 px-5 text-base font-extrabold transition hover:bg-foreground/10"
             >
               {copied === "draft" ? "복사됨 ✓" : "내용 복사"}
             </button>
             <button
               type="button"
               onClick={() => copy("all")}
-              className="h-12 rounded-full bg-accent px-7 text-base font-extrabold text-accent-foreground transition hover:opacity-90"
+              className="h-12 rounded-xl bg-accent px-7 text-base font-extrabold text-accent-foreground transition hover:opacity-90"
             >
               {copied === "all" ? "복사됨 ✓" : "제목 포함 전체 복사"}
+            </button>
+            <button
+              type="button"
+              onClick={saveWord}
+              className="h-12 rounded-xl border-2 border-accent px-5 text-base font-extrabold text-accent transition hover:bg-accent/10"
+            >
+              Word·한글 파일로 저장
             </button>
           </div>
         </div>
