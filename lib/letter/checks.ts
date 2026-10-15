@@ -37,6 +37,14 @@ export function findDraftWarnings(language: Language, draft: string): string[] {
     );
   }
 
+  // 초안은 선택한 언어의 문자로만 써야 한다. 한국어 이름·기관명이 그대로 남은 경우를 알린다.
+  const hangul = Array.from(new Set(draft.match(/[가-힣]+/g) ?? []));
+  if (hangul.length > 0) {
+    warnings.push(
+      `초안에 한글이 그대로 남아 있습니다: ${hangul.slice(0, 5).join(", ")}. 해당 부분을 ${LENGTH_LIMITS[language].label}로 옮겨 적어 주세요.`,
+    );
+  }
+
   if (language === "en") {
     const found = Array.from(new Set(draft.match(CONTRACTION) ?? []));
     if (found.length > 0) {
