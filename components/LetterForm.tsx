@@ -626,14 +626,20 @@ export default function LetterForm() {
         {!result && !loading ? (
           <div className="flex flex-col gap-3 rounded-2xl border-2 border-foreground/15 p-5">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="text-lg font-extrabold">공문 초안 미리보기</h2>
+              <h2 className="text-lg font-extrabold">공문 초안</h2>
               <span className="rounded-full bg-accent/15 px-3 py-1 text-xs font-extrabold text-accent">
-                실시간 반영
+                입력하는 대로 작성됩니다
               </span>
             </div>
-            <pre className="whitespace-pre-wrap break-words rounded-xl bg-foreground/5 p-4 font-sans text-base leading-7">
-              {preview}
-            </pre>
+            {preview.trim() === "" ? (
+              <div className="flex min-h-64 items-center justify-center rounded-xl border-2 border-dashed border-foreground/25 p-6 text-center text-base text-foreground/60">
+                왼쪽에서 선택하고 입력하면 이곳에 공문이 차례로 작성됩니다.
+              </div>
+            ) : (
+              <pre className="min-h-64 whitespace-pre-wrap break-words rounded-xl bg-foreground/5 p-4 font-sans text-base leading-7">
+                {preview}
+              </pre>
+            )}
             <p className="text-sm text-foreground/70">
               입력한 내용을 공문 순서(수신 → 제목 → 본문 → 발신)로 배치한
               미리보기입니다. 초안 만들기를 누르면 AI가 격식에 맞게 다듬은

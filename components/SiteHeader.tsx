@@ -21,12 +21,12 @@ export default function SiteHeader() {
             <Image
               src="/logo.svg"
               alt=""
-              width={40}
-              height={40}
+              width={56}
+              height={56}
               priority
-              className="h-10 w-10 rounded-xl"
+              className="h-14 w-14 rounded-2xl"
             />
-            <span className="text-xl font-extrabold tracking-tight text-accent">
+            <span className="text-2xl font-extrabold tracking-tight text-accent sm:text-4xl">
               글로벌 공문 도우미
             </span>
           </Link>

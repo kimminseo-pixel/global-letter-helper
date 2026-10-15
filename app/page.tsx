@@ -101,7 +101,7 @@ export default function Home() {
         </ol>
       </section>
 
-      <section id="guide" aria-labelledby="guide-title" className="flex flex-col gap-4 scroll-mt-6">
+      <section id="guide" aria-labelledby="guide-title" className="flex min-h-[70vh] scroll-mt-24 flex-col gap-4">
         <h2
           id="guide-title"
           className="border-b-2 border-foreground/15 pb-2 text-2xl font-extrabold tracking-tight"
