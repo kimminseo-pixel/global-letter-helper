@@ -131,12 +131,19 @@ export const errorResponseSchema = z.object({
       Object.keys(ERROR_CODES) as [ErrorCode, ...ErrorCode[]],
     ),
     message: z.string(),
+    /** 입력 검증 실패 시 필드별 안내 (DESIGN §4.2 "필드별 안내") */
+    fieldErrors: z.record(z.string(), z.array(z.string())).optional(),
   }),
 });
 
 export type ErrorResponse = z.infer<typeof errorResponseSchema>;
 
 /** 코드로 오류 응답 본문을 만든다 (내부 오류 내용은 담지 않는다). */
-export function toErrorResponse(code: ErrorCode): ErrorResponse {
-  return { error: { code, message: ERROR_CODES[code].message } };
+export function toErrorResponse(
+  code: ErrorCode,
+  fieldErrors?: Record<string, string[]>,
+): ErrorResponse {
+  return {
+    error: { code, message: ERROR_CODES[code].message, fieldErrors },
+  };
 }

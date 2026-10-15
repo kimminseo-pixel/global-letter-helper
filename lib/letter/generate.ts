@@ -1,0 +1,122 @@
+// Design Ref: §2.1 (5)~(8), §4.2, §5 — OpenAI 호출·응답 검증 (서버 전용)
+// Plan SC: API 키는 서버에서만 읽고, 모델명은 OPENAI_MODEL로 분리하며, AI 쪽 저장 옵션을 끈다.
+import "server-only";
+
+import OpenAI from "openai";
+import { zodTextFormat } from "openai/helpers/zod";
+import * as z from "zod";
+
+import { buildLetterPrompt } from "./prompt";
+import {
+  aiLetterSchema,
+  type ErrorCode,
+  type LetterRequest,
+  type LetterResponse,
+} from "./schema";
+
+/** AI 한 번 호출의 제한 시간 (DESIGN §4.2: 45초) */
+const AI_CALL_TIMEOUT_MS = 45_000;
+/** 라우트 maxDuration(60초) 안에서 여유를 두고 쓸 수 있는 전체 시간 */
+const TOTAL_BUDGET_MS = 55_000;
+/** 재시도를 시작하려면 남아 있어야 하는 최소 시간 */
+const MIN_RETRY_MS = 5_000;
+
+/** 화면에 보여 줄 오류 코드를 담은 오류 (내용 없이 코드만 전달한다) */
+export class LetterError extends Error {
+  constructor(public readonly code: ErrorCode) {
+    super(code);
+    this.name = "LetterError";
+  }
+}
+
+// OpenAI 구조화 출력은 글자 수·개수 제약을 지원하지 않을 수 있어,
+// AI에는 제약 없는 형태를 요구하고 받은 뒤 aiLetterSchema로 다시 검증한다.
+const aiWireSchema = z.object({
+  draft: z.string(),
+  koreanVersion: z.string(),
+  reviewPoints: z.array(z.string()),
+  uncertain: z.array(z.object({ phrase: z.string(), reason: z.string() })),
+  missingItems: z.array(
+    z.object({ label: z.string(), suggestion: z.string() }),
+  ),
+});
+
+function createClient(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    console.error("[letters] OPENAI_API_KEY가 설정되지 않았습니다.");
+    throw new LetterError("INTERNAL");
+  }
+  return new OpenAI({ apiKey, maxRetries: 0 });
+}
+
+function readModel(): string {
+  const model = process.env.OPENAI_MODEL;
+  if (!model) {
+    console.error("[letters] OPENAI_MODEL이 설정되지 않았습니다.");
+    throw new LetterError("INTERNAL");
+  }
+  return model;
+}
+
+/** OpenAI 오류를 화면용 오류 코드로 바꾼다. 요청·응답 내용은 로그에 남기지 않는다. */
+function toLetterError(error: unknown): LetterError {
+  if (error instanceof LetterError) return error;
+  if (error instanceof OpenAI.APIConnectionTimeoutError) {
+    return new LetterError("AI_TIMEOUT");
+  }
+  if (error instanceof OpenAI.RateLimitError) {
+    return new LetterError("RATE_LIMITED");
+  }
+  if (error instanceof OpenAI.APIError) {
+    console.error("[letters] OpenAI 오류", error.status ?? "-", error.name);
+    return new LetterError("AI_ERROR");
+  }
+  console.error("[letters] 예상하지 못한 오류", error instanceof Error ? error.name : "-");
+  return new LetterError("INTERNAL");
+}
+
+/**
+ * 공문 초안을 만든다.
+ * - 저장 옵션을 꺼서 OpenAI 쪽에 입력·결과가 남지 않게 한다 (DESIGN §5).
+ * - 형식이 맞지 않을 때만 남은 시간 안에서 1회 재시도하고, 시간 초과에는 재시도하지 않는다.
+ */
+export async function generateLetter(
+  request: LetterRequest,
+): Promise<LetterResponse> {
+  const client = createClient();
+  const model = readModel();
+  const prompt = buildLetterPrompt(request);
+  const startedAt = Date.now();
+
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    const remaining = TOTAL_BUDGET_MS - (Date.now() - startedAt);
+    if (attempt > 1 && remaining < MIN_RETRY_MS) break;
+
+    try {
+      const response = await client.responses.parse(
+        {
+          model,
+          store: false,
+          input: [
+            { role: "system", content: prompt.system },
+            { role: "user", content: prompt.user },
+          ],
+          text: { format: zodTextFormat(aiWireSchema, "official_letter") },
+        },
+        { timeout: Math.min(AI_CALL_TIMEOUT_MS, remaining) },
+      );
+
+      const checked = aiLetterSchema.safeParse(response.output_parsed);
+      if (checked.success) {
+        // 분량 경고(warnings)는 분량 규칙을 넣는 작업 3에서 채운다.
+        return { ...checked.data, warnings: [] };
+      }
+      // 형식 불일치: 다음 반복에서 1회 재시도
+    } catch (error) {
+      throw toLetterError(error);
+    }
+  }
+
+  throw new LetterError("AI_ERROR");
+}
