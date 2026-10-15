@@ -35,16 +35,16 @@ export default function Home() {
         {/* 손으로 쓰며 고민하던 모습이 온라인으로 편하게 쓰는 모습으로 천천히 바뀐다(CSS 애니메이션). */}
         <figure className="relative aspect-[3/2] w-full overflow-hidden rounded-3xl shadow-2xl">
           <Image
-            src="/hero-before.jpg"
-            alt="해외로 보낼 공문을 손으로 쓰며 고민하는 한국인 직장인"
+            src="/hero-office-before.jpg"
+            alt="해외로 보낼 공문을 손으로 쓰며 고민하는 젊은 한국인 여성 직장인"
             fill
             priority
             sizes="(min-width: 768px) 50vw, 100vw"
             className="object-cover"
           />
           <Image
-            src="/hero-after.jpg"
-            alt="같은 직장인이 웹사이트에서 공문을 편하게 작성하며 웃는 모습"
+            src="/hero-office-after.jpg"
+            alt="같은 직장인이 웹사이트에서 공문을 편하게 작성하며 미소 짓는 모습"
             fill
             sizes="(min-width: 768px) 50vw, 100vw"
             className="hero-after object-cover"
