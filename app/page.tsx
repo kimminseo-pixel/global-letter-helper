@@ -15,7 +15,7 @@ export default function Home() {
           <h1 className="text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
             외국에 보낼 공문,
             <br />
-            격식에 맞게 한 번에.
+            격식에 맞게 한 번에
           </h1>
           <p className="text-lg font-bold leading-8 text-foreground/80">
             언어, 문체, 대상, 내용만 고르고 적으면 영어·중국어·일본어 공문
