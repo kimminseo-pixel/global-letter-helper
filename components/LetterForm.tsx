@@ -8,9 +8,6 @@ import { useMemo, useState, type FormEvent } from "react";
 import { CITIES, COUNTRIES, TITLES, parseDateInput } from "@/lib/letter/options";
 import { buildPreview } from "@/lib/letter/preview";
 import {
-  DEFAULT_FORMALITY,
-  DEFAULT_LANGUAGE,
-  DEFAULT_LETTER_TYPE,
   FORMALITIES,
   LANGUAGES,
   LETTER_TYPES,
@@ -45,11 +42,11 @@ type FormState = {
 };
 
 const INITIAL: FormState = {
-  language: DEFAULT_LANGUAGE,
-  formality: DEFAULT_FORMALITY,
-  recipientType: "government",
+  language: "",
+  formality: "",
+  recipientType: "",
   recipientTypeNote: "",
-  letterType: DEFAULT_LETTER_TYPE,
+  letterType: "",
   letterTypeNote: "",
   purpose: "",
   country: "",
@@ -160,6 +157,14 @@ function TextField({
   );
 }
 
+/** 숫자만 남겨 2026 → 2026.1 → 2026.10.13 형태로 자동 변환한다. */
+function formatDateTyping(input: string): string {
+  const digits = input.replace(/\D/g, "").slice(0, 8);
+  if (digits.length <= 4) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 4)}.${digits.slice(4)}`;
+  return `${digits.slice(0, 4)}.${digits.slice(4, 6)}.${digits.slice(6)}`;
+}
+
 const OTHER = "__other__";
 
 /** 목록에서 고르거나, 목록에 없으면 '기타'를 눌러 직접 입력하는 칸 */
@@ -268,6 +273,17 @@ export default function LetterForm() {
     event.preventDefault();
     if (loading) return;
 
+    const missing: Record<string, string[]> = {};
+    if (form.language === "") missing.language = ["언어를 선택해 주세요"];
+    if (form.formality === "") missing.formality = ["문체를 선택해 주세요"];
+    if (form.recipientType === "") missing.recipientType = ["대상 기관을 선택해 주세요"];
+    if (form.letterType === "") missing.letterType = ["공문 작성 목적을 선택해 주세요"];
+    if (form.purpose.trim() === "") missing.purpose = ["요청 사항을 입력해 주세요"];
+    if (Object.keys(missing).length > 0) {
+      setError({ message: "빠진 항목을 확인해 주세요.", fieldErrors: missing });
+      return;
+    }
+
     if (date.kind === "invalid") {
       setError({
         message: "일시를 확인해 주세요.",
@@ -357,6 +373,7 @@ export default function LetterForm() {
           options={LANGUAGES}
           value={form.language}
           onChange={set("language")}
+          error={fieldError("language")}
         />
         <ChoiceGroup
           legend="② 문체 (격식 수준)"
@@ -364,6 +381,7 @@ export default function LetterForm() {
           options={FORMALITIES}
           value={form.formality}
           onChange={set("formality")}
+          error={fieldError("formality")}
         />
         <ChoiceGroup
           legend="③ 대상 기관"
@@ -388,6 +406,7 @@ export default function LetterForm() {
           options={LETTER_TYPES}
           value={form.letterType}
           onChange={set("letterType")}
+          error={fieldError("letterType")}
         />
         {form.letterType === "other" ? (
           <TextField
@@ -452,19 +471,15 @@ export default function LetterForm() {
               <TextField
                 label="일시"
                 value={form.dateText}
-                onChange={set("dateText")}
-                maxLength={20}
-                hint="입력 방법: 숫자 8자리로 적습니다. 예) 20250212 → 2025년 2월 12일"
+                onChange={(value) => set("dateText")(formatDateTyping(value))}
+                maxLength={10}
+                hint="입력 방법: 숫자 8자리로 적습니다. 예) 20261013 → 2026.10.13"
                 error={fieldError("dateTime")}
               />
-              {date.kind === "ok" ? (
-                <p className="mt-1 text-sm font-extrabold text-accent">
-                  → {date.korean}
-                </p>
-              ) : null}
-              {date.kind === "invalid" ? (
+              {date.kind === "invalid" &&
+              form.dateText.replace(/\D/g, "").length === 8 ? (
                 <p className="mt-1 text-sm font-extrabold text-red-600">
-                  날짜를 알아보지 못했습니다. 20250212처럼 적어 주세요.
+                  없는 날짜입니다. 월·일을 확인해 주세요.
                 </p>
               ) : null}
             </div>
@@ -472,28 +487,35 @@ export default function LetterForm() {
             <div className="flex flex-col gap-1.5 sm:col-span-2">
               <span className="text-base font-extrabold">장소</span>
               <div className="grid gap-3 sm:grid-cols-3">
-                <SelectWithOther
-                  ariaLabel="장소 국가"
-                  options={COUNTRIES}
+                <input
+                  type="text"
+                  aria-label="장소 국가"
+                  list="place-country-list"
                   value={form.placeCountry}
-                  onChange={(value) =>
-                    // 국가를 바꾸면 이전 도시 선택은 비운다.
+                  maxLength={LIMITS.place}
+                  onChange={(event) => {
+                    const value = event.target.value;
                     setForm((prev) => ({
                       ...prev,
                       placeCountry: value,
-                      placeCity: "",
-                    }))
-                  }
-                  maxLength={LIMITS.place}
+                      // 목록에서 다른 국가를 고르면 이전 국가의 도시는 비운다.
+                      placeCity:
+                        COUNTRIES.includes(value) &&
+                        !(CITIES[value] ?? []).includes(prev.placeCity)
+                          ? ""
+                          : prev.placeCity,
+                    }));
+                  }}
+                  className={FIELD_CLASS}
                 />
-                {/* 선택한 국가의 도시만 보여 준다. 목록에 없으면 기타로 직접 입력한다. */}
-                <SelectWithOther
-                  key={form.placeCountry}
-                  ariaLabel="장소 도시"
-                  options={CITIES[form.placeCountry] ?? []}
+                <input
+                  type="text"
+                  aria-label="장소 도시"
+                  list="place-city-list"
                   value={form.placeCity}
-                  onChange={set("placeCity")}
                   maxLength={LIMITS.place}
+                  onChange={(event) => set("placeCity")(event.target.value)}
+                  className={FIELD_CLASS}
                 />
                 <input
                   type="text"
@@ -543,6 +565,17 @@ export default function LetterForm() {
             실명·연락처 대신 직함 위주로 적는 것을 권장합니다.
           </p>
         </div>
+
+        <datalist id="place-country-list">
+          {COUNTRIES.map((name) => (
+            <option key={name} value={name} />
+          ))}
+        </datalist>
+        <datalist id="place-city-list">
+          {(CITIES[form.placeCountry.trim()] ?? []).map((city) => (
+            <option key={city} value={city} />
+          ))}
+        </datalist>
 
         <button
           type="submit"
