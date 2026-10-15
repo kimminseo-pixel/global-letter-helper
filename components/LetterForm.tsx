@@ -35,9 +35,11 @@ type FormState = {
   recipientTitle: string;
   senderOrg: string;
   senderName: string;
+  year: string;
   date: string;
-  time: string;
-  place: string;
+  placeCountry: string;
+  placeCity: string;
+  placeDetail: string;
 };
 
 const INITIAL: FormState = {
@@ -55,21 +57,46 @@ const INITIAL: FormState = {
   recipientTitle: "",
   senderOrg: "",
   senderName: "",
+  year: String(new Date().getFullYear()),
   date: "",
-  time: "",
-  place: "",
+  placeCountry: "",
+  placeCity: "",
+  placeDetail: "",
 };
 
 
 /** 받는 나라 선택지 (목록에 없으면 직접 입력할 수 있다) */
 const COUNTRIES = [
-  "미국", "중국", "일본", "영국", "독일", "프랑스", "캐나다", "호주", "뉴질랜드", "싱가포르",
+  "대한민국", "미국", "중국", "일본", "영국", "독일", "프랑스", "캐나다", "호주", "뉴질랜드", "싱가포르",
   "베트남", "태국", "인도네시아", "말레이시아", "필리핀", "인도", "파키스탄", "방글라데시", "몽골", "카자흐스탄",
   "우즈베키스탄", "러시아", "튀르키예", "사우디아라비아", "아랍에미리트", "카타르", "이스라엘", "이집트", "남아프리카공화국", "나이지리아",
   "케냐", "에티오피아", "브라질", "멕시코", "아르헨티나", "칠레", "콜롬비아", "페루", "이탈리아", "스페인",
   "네덜란드", "벨기에", "스위스", "스웨덴", "노르웨이", "핀란드", "덴마크", "폴란드", "체코", "헝가리",
   "오스트리아", "그리스", "포르투갈", "대만", "홍콩", "스리랑카", "네팔", "캄보디아", "라오스", "미얀마",
 ];
+
+/** 연도 선택지: 올해부터 5년 뒤까지 */
+const YEARS = Array.from({ length: 6 }, (_, i) =>
+  String(new Date().getFullYear() + i),
+);
+
+/** 장소에서 국가를 고르면 보여 줄 대표 도시 (목록에 없으면 직접 입력) */
+const CITIES: Record<string, string[]> = {
+  대한민국: ["서울", "부산", "인천", "대전", "대구", "광주", "제주", "수원", "성남", "고양"],
+  미국: ["워싱턴 D.C.", "뉴욕", "로스앤젤레스", "샌프란시스코", "시카고", "휴스턴", "보스턴", "시애틀"],
+  중국: ["베이징", "상하이", "광저우", "선전", "청두", "홍콩", "항저우"],
+  일본: ["도쿄", "오사카", "나고야", "후쿠오카", "요코하마", "교토", "삿포로"],
+  영국: ["런던", "맨체스터", "버밍엄", "에든버러"],
+  독일: ["베를린", "프랑크푸르트", "뮌헨", "함부르크", "뒤셀도르프"],
+  프랑스: ["파리", "리옹", "마르세유", "니스"],
+  캐나다: ["오타와", "토론토", "밴쿠버", "몬트리올"],
+  호주: ["캔버라", "시드니", "멜버른", "브리즈번"],
+  싱가포르: ["싱가포르"],
+  베트남: ["하노이", "호치민", "다낭"],
+  인도: ["뉴델리", "뭄바이", "방갈로르", "첸나이"],
+  아랍에미리트: ["두바이", "아부다비"],
+  스위스: ["제네바", "취리히", "베른", "바젤"],
+};
 
 /** 받는 사람 직함 선택지 (목록에 없으면 직접 입력할 수 있다) */
 const TITLES = [
@@ -78,20 +105,16 @@ const TITLES = [
   "Minister", "Ambassador", "Director-General", "Director", "Manager", "President", "CEO", "Professor",
 ];
 
-/** 달력·시간 입력값(2026-11-12, 14:00)을 공문에 쓰기 쉬운 한국어 표기로 바꾼다. */
-function formatDateTime(date: string, time: string): string {
+/** 달력에서 고른 날짜(2026-11-12)를 공문에 쓰기 쉬운 한국어 표기로 바꾼다. */
+function formatDate(date: string): string {
   const d = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
   if (!d) return "";
-  let text = `${d[1]}년 ${Number(d[2])}월 ${Number(d[3])}일`;
-  const t = /^(\d{2}):(\d{2})$/.exec(time);
-  if (t) {
-    const hour = Number(t[1]);
-    const minute = Number(t[2]);
-    const half = hour < 12 ? "오전" : "오후";
-    const h12 = hour % 12 === 0 ? 12 : hour % 12;
-    text += ` ${half} ${h12}시${minute > 0 ? ` ${minute}분` : ""}`;
-  }
-  return text;
+  return `${d[1]}년 ${Number(d[2])}월 ${Number(d[3])}일`;
+}
+
+/** 연도를 바꾸면 이미 고른 날짜의 연도도 함께 맞춘다. */
+function withYear(date: string, year: string): string {
+  return /^\d{4}-\d{2}-\d{2}$/.test(date) ? `${year}${date.slice(4)}` : date;
 }
 
 type ErrorState = { message: string; fieldErrors: Record<string, string[]> };
@@ -210,9 +233,9 @@ export default function LetterForm() {
     setResult(null);
 
     // 달력·시간 칸은 하나의 일시 문장으로 합쳐 보낸다.
-    const { date: _date, time: _time, ...formWithoutDateParts } = form;
-    void _date;
-    void _time;
+    const { year, date, placeCountry, placeCity, placeDetail, ...formWithoutParts } =
+      form;
+    void year;
 
     try {
       const response = await fetch("/api/letters", {
@@ -220,8 +243,12 @@ export default function LetterForm() {
         headers: { "Content-Type": "application/json" },
         // '기타'를 고르지 않은 경우의 직접 입력 칸 값은 보내지 않는다.
         body: JSON.stringify({
-          ...formWithoutDateParts,
-          dateTime: formatDateTime(form.date, form.time),
+          ...formWithoutParts,
+          dateTime: formatDate(date),
+          place: [placeCountry, placeCity, placeDetail]
+            .map((part) => part.trim())
+            .filter((part) => part !== "")
+            .join(", "),
           recipientTypeNote:
             form.recipientType === "other" ? form.recipientTypeNote : "",
           letterTypeNote:
@@ -295,7 +322,6 @@ export default function LetterForm() {
             value={form.recipientTypeNote}
             onChange={set("recipientTypeNote")}
             maxLength={LIMITS.recipientTypeNote}
-            example="국제기구, 대학, 협회, 연구소"
             error={fieldError("recipientTypeNote")}
           />
         ) : null}
@@ -312,7 +338,6 @@ export default function LetterForm() {
             value={form.letterTypeNote}
             onChange={set("letterTypeNote")}
             maxLength={LIMITS.letterTypeNote}
-            example="계약 연장 문의"
             error={fieldError("letterTypeNote")}
           />
         ) : null}
@@ -341,7 +366,6 @@ export default function LetterForm() {
               value={form.recipientOrg}
               onChange={set("recipientOrg")}
               maxLength={LIMITS.recipientOrg}
-              example="미국 상무부"
               error={fieldError("recipientOrg")}
             />
             <TextField
@@ -350,7 +374,6 @@ export default function LetterForm() {
               onChange={set("country")}
               maxLength={LIMITS.country}
               listId="country-list"
-              example="미국 (목록 선택 또는 직접 입력)"
               error={fieldError("country")}
             />
             <TextField
@@ -358,7 +381,6 @@ export default function LetterForm() {
               value={form.recipientName}
               onChange={set("recipientName")}
               maxLength={LIMITS.recipientName}
-              example="John Smith"
               error={fieldError("recipientName")}
             />
             <TextField
@@ -367,49 +389,118 @@ export default function LetterForm() {
               onChange={set("recipientTitle")}
               maxLength={LIMITS.recipientTitle}
               listId="title-list"
-              example="국장 (목록 선택 또는 직접 입력)"
               error={fieldError("recipientTitle")}
             />
 
             <div className="flex flex-col gap-1.5 sm:col-span-2">
-              <span className="text-base font-extrabold">
-                일시 (눌러서 달력으로 선택)
-              </span>
+              <span className="text-base font-extrabold">일시</span>
               <div className="grid grid-cols-2 gap-3">
+                <select
+                  aria-label="연도"
+                  value={form.year}
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      year: event.target.value,
+                      date: withYear(prev.date, event.target.value),
+                    }))
+                  }
+                  className="h-12 rounded-xl border-2 border-foreground/30 bg-background px-4 text-base focus-visible:border-accent focus-visible:outline-none"
+                >
+                  {YEARS.map((year) => (
+                    <option key={year} value={year}>
+                      {year}년
+                    </option>
+                  ))}
+                </select>
+
+                <div className="relative h-12">
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none flex h-full items-center justify-between rounded-xl border-2 border-foreground/30 bg-background px-4 text-base"
+                  >
+                    <span className={form.date ? "" : "text-foreground/50"}>
+                      {form.date
+                        ? `${Number(form.date.slice(5, 7))}월 ${Number(form.date.slice(8, 10))}일`
+                        : "달력에서 선택"}
+                    </span>
+                    <span>📅</span>
+                  </div>
+                  <input
+                    type="date"
+                    aria-label="날짜 선택 (달력)"
+                    value={form.date}
+                    min={`${form.year}-01-01`}
+                    max={`${form.year}-12-31`}
+                    onClick={(event) => {
+                      try {
+                        event.currentTarget.showPicker();
+                      } catch {
+                        // 달력을 직접 열 수 없는 브라우저에서는 기본 동작을 따른다.
+                      }
+                    }}
+                    onChange={(event) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        date: event.target.value,
+                        year: event.target.value
+                          ? event.target.value.slice(0, 4)
+                          : prev.year,
+                      }))
+                    }
+                    className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5 sm:col-span-2">
+              <span className="text-base font-extrabold">장소</span>
+              <div className="grid gap-3 sm:grid-cols-3">
                 <input
-                  type="date"
-                  aria-label="날짜"
-                  value={form.date}
-                  onChange={(event) => set("date")(event.target.value)}
+                  type="text"
+                  aria-label="장소 국가"
+                  placeholder=""
+                  list="country-list"
+                  value={form.placeCountry}
+                  maxLength={LIMITS.place}
+                  onChange={(event) => set("placeCountry")(event.target.value)}
                   className="h-12 rounded-xl border-2 border-foreground/30 bg-background px-4 text-base focus-visible:border-accent focus-visible:outline-none"
                 />
                 <input
-                  type="time"
-                  aria-label="시간"
-                  value={form.time}
-                  onChange={(event) => set("time")(event.target.value)}
+                  type="text"
+                  aria-label="장소 도시"
+                  list={
+                    CITIES[form.placeCountry.trim()]
+                      ? `city-list-${form.placeCountry.trim()}`
+                      : undefined
+                  }
+                  value={form.placeCity}
+                  maxLength={LIMITS.place}
+                  onChange={(event) => set("placeCity")(event.target.value)}
+                  className="h-12 rounded-xl border-2 border-foreground/30 bg-background px-4 text-base focus-visible:border-accent focus-visible:outline-none"
+                />
+                <input
+                  type="text"
+                  aria-label="세부 장소"
+                  value={form.placeDetail}
+                  maxLength={LIMITS.place}
+                  onChange={(event) => set("placeDetail")(event.target.value)}
                   className="h-12 rounded-xl border-2 border-foreground/30 bg-background px-4 text-base focus-visible:border-accent focus-visible:outline-none"
                 />
               </div>
-              <span className="text-right text-xs font-bold text-foreground/50">
-                예: 2026년 11월 12일 오후 2시
-              </span>
+              <div className="grid grid-cols-3 gap-3 text-xs font-bold text-foreground/60">
+                <span>국가</span>
+                <span>도시</span>
+                <span>세부 장소</span>
+              </div>
             </div>
 
-            <TextField
-              label="장소"
-              value={form.place}
-              onChange={set("place")}
-              maxLength={LIMITS.place}
-              example="서울 코엑스 3층"
-              error={fieldError("place")}
-            />
             <TextField
               label="보내는 기관"
               value={form.senderOrg}
               onChange={set("senderOrg")}
               maxLength={LIMITS.senderOrg}
-              example="한국무역협회"
               error={fieldError("senderOrg")}
             />
             <TextField
@@ -417,7 +508,6 @@ export default function LetterForm() {
               value={form.senderName}
               onChange={set("senderName")}
               maxLength={LIMITS.senderName}
-              example="김민서 대리"
               error={fieldError("senderName")}
             />
           </div>
@@ -433,9 +523,6 @@ export default function LetterForm() {
               onChange={(event) => set("content")(event.target.value)}
               className="rounded-xl border-2 border-foreground/30 bg-background px-4 py-3 text-base focus-visible:border-accent focus-visible:outline-none"
             />
-            <span className="text-right text-xs font-bold text-foreground/50">
-              예: 통역이 필요합니다
-            </span>
           </label>
           <p className="text-sm text-foreground/60">
             실명·연락처 대신 직함 위주로 적는 것을 권장합니다.
@@ -447,6 +534,13 @@ export default function LetterForm() {
             <option key={name} value={name} />
           ))}
         </datalist>
+        {Object.entries(CITIES).map(([country, cities]) => (
+          <datalist key={country} id={`city-list-${country}`}>
+            {cities.map((city) => (
+              <option key={city} value={city} />
+            ))}
+          </datalist>
+        ))}
         <datalist id="title-list">
           {TITLES.map((name) => (
             <option key={name} value={name} />
@@ -482,13 +576,6 @@ export default function LetterForm() {
         ) : null}
 
         {result ? <LetterResult result={result} /> : null}
-
-        {!result && !loading && !error ? (
-          <div className="rounded-2xl border-2 border-dashed border-foreground/25 p-8 text-center text-lg text-foreground/70">
-            왼쪽에서 언어·문체·대상을 고르고 내용을 적은 뒤{" "}
-            <span className="font-extrabold">초안 만들기</span>를 눌러 주세요.
-          </div>
-        ) : null}
       </section>
     </div>
   );

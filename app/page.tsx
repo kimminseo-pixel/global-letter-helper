@@ -9,9 +9,19 @@ export default function Home() {
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4 py-10 sm:px-6 sm:py-16">
       <section className="grid items-center gap-10 md:grid-cols-2">
         <div className="flex flex-col gap-6">
-          <p className="text-base font-extrabold tracking-wide text-accent">
-            글로벌 공문 도우미
-          </p>
+          <div className="flex items-center gap-3">
+            <Image
+              src="/logo.svg"
+              alt="글로벌 공문 도우미 로고"
+              width={44}
+              height={44}
+              priority
+              className="h-11 w-11 rounded-xl"
+            />
+            <p className="text-xl font-extrabold tracking-wide text-accent">
+              글로벌 공문 도우미
+            </p>
+          </div>
           <h1 className="text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
             외국에 보낼 공문
             <br />
