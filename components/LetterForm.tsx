@@ -5,8 +5,9 @@
 // Plan SC: 필수 입력은 수신처 유형·요청 사항뿐, 입력값은 화면 메모리(React 상태)에만 둔다(브라우저 저장소 미사용).
 import { useMemo, useState, type FormEvent } from "react";
 
-import { CITIES, COUNTRIES, TITLES, parseDateInput } from "@/lib/letter/options";
+import { CITIES, COUNTRIES, TITLES, countriesFor, parseDateInput } from "@/lib/letter/options";
 import {
+  CHINESE_SCRIPTS,
   FORMALITIES,
   LANGUAGES,
   LETTER_TYPES,
@@ -21,6 +22,7 @@ import LetterResult from "./LetterResult";
 
 type FormState = {
   language: string;
+  chineseScript: string;
   formality: string;
   recipientType: string;
   recipientTypeNote: string;
@@ -42,6 +44,7 @@ type FormState = {
 
 const INITIAL: FormState = {
   language: "",
+  chineseScript: "",
   formality: "",
   recipientType: "",
   recipientTypeNote: "",
@@ -101,7 +104,7 @@ function ChoiceGroup({
               onChange={() => onChange(option.value)}
               className="peer sr-only"
             />
-            <span className="inline-flex min-h-12 items-center rounded-full border-2 border-foreground/30 px-5 text-base font-extrabold transition peer-checked:border-accent peer-checked:bg-accent peer-checked:text-accent-foreground peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent hover:border-accent">
+            <span className="inline-flex min-h-12 items-center rounded-xl border-2 border-foreground/30 px-5 text-base font-extrabold transition peer-checked:border-accent peer-checked:bg-accent peer-checked:text-accent-foreground peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent hover:border-accent">
               {option.label}
             </span>
           </label>
@@ -220,6 +223,10 @@ export default function LetterForm() {
   const set = (key: keyof FormState) => (value: string) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
+  const countryOptions = useMemo(
+    () => countriesFor(form.language),
+    [form.language],
+  );
   const date = useMemo(() => parseDateInput(form.dateText), [form.dateText]);
   const place = [form.placeCountry, form.placeCity, form.placeDetail]
     .map((part) => part.trim())
@@ -236,6 +243,9 @@ export default function LetterForm() {
   ) => items.find((item) => item.value === value)?.label ?? "";
   const summary: { label: string; value: string }[] = [
     { label: "언어", value: labelOf(LANGUAGES, form.language) },
+    ...(form.language === "zh"
+      ? [{ label: "글자체", value: labelOf(CHINESE_SCRIPTS, form.chineseScript) }]
+      : []),
     { label: "문체", value: labelOf(FORMALITIES, form.formality) },
     {
       label: "대상 기관",
@@ -275,6 +285,8 @@ export default function LetterForm() {
 
     const missing: Record<string, string[]> = {};
     if (form.language === "") missing.language = ["언어를 선택해 주세요"];
+    if (form.language === "zh" && form.chineseScript === "")
+      missing.chineseScript = ["간체 또는 번체를 선택해 주세요"];
     if (form.formality === "") missing.formality = ["문체를 선택해 주세요"];
     if (form.recipientType === "") missing.recipientType = ["대상 기관을 선택해 주세요"];
     if (form.letterType === "") missing.letterType = ["공문 작성 목적을 선택해 주세요"];
@@ -307,6 +319,8 @@ export default function LetterForm() {
         // '기타'를 고르지 않은 경우의 직접 입력 칸 값은 보내지 않는다.
         body: JSON.stringify({
           language: form.language,
+          chineseScript:
+            form.language === "zh" ? form.chineseScript : undefined,
           formality: form.formality,
           recipientType: form.recipientType,
           recipientTypeNote:
@@ -376,6 +390,16 @@ export default function LetterForm() {
           onChange={set("language")}
           error={fieldError("language")}
         />
+        {form.language === "zh" ? (
+          <ChoiceGroup
+            legend="중국어 글자체"
+            name="chineseScript"
+            options={CHINESE_SCRIPTS}
+            value={form.chineseScript}
+            onChange={set("chineseScript")}
+            error={fieldError("chineseScript")}
+          />
+        ) : null}
         <ChoiceGroup
           legend="② 문체 (격식 수준)"
           name="formality"
@@ -441,7 +465,7 @@ export default function LetterForm() {
               label="받는 나라"
               ariaLabel="받는 나라"
               listId="recipient-country-list"
-              options={COUNTRIES}
+              options={countryOptions}
               value={form.country}
               onChange={set("country")}
               maxLength={LIMITS.country}
@@ -570,7 +594,7 @@ export default function LetterForm() {
         </div>
 
         <datalist id="place-country-list">
-          {COUNTRIES.map((name) => (
+          {countryOptions.map((name) => (
             <option key={name} value={name} />
           ))}
         </datalist>
@@ -583,7 +607,7 @@ export default function LetterForm() {
         <button
           type="submit"
           disabled={loading}
-          className="h-14 rounded-full bg-accent text-xl font-extrabold text-accent-foreground shadow-lg transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+          className="h-14 rounded-2xl bg-accent text-xl font-extrabold text-accent-foreground shadow-lg transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? "AI가 공문을 만드는 중이에요…" : "AI로 공문 만들기"}
         </button>

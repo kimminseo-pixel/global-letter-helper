@@ -21,7 +21,7 @@ export const COUNTRIES: readonly string[] = [
   "코소보", "코트디부아르", "콜롬비아", "콩고공화국", "콩고민주공화국", "쿠바", "쿠웨이트", "크로아티아", "키르기스스탄", "키리바시",
   "키프로스", "타지키스탄", "탄자니아", "태국", "토고", "통가", "투르크메니스탄", "투발루", "튀니지", "튀르키예",
   "트리니다드토바고", "파나마", "파라과이", "파키스탄", "파푸아뉴기니", "팔라우", "팔레스타인", "페루", "포르투갈", "폴란드",
-  "프랑스", "피지", "핀란드", "필리핀", "헝가리", "홍콩", "바티칸",
+  "프랑스", "피지", "핀란드", "필리핀", "헝가리", "홍콩", "마카오", "바티칸",
 ];
 
 /** 받는 사람 직함 (목록에 없으면 '기타'로 직접 입력) */
@@ -262,4 +262,17 @@ export function parseDateInput(text: string): ParsedDate {
     return { kind: "invalid" };
   }
   return { kind: "ok", year: y, month: m, day: d, korean: `${y}년 ${m}월 ${d}일` };
+}
+
+/** 선택한 언어를 쓰는 나라·지역: 나라 목록의 맨 앞에 추천으로 보여 준다. */
+const LANGUAGE_COUNTRIES: Record<string, readonly string[]> = {
+  zh: ["중국", "대만", "홍콩", "마카오", "싱가포르"],
+  ja: ["일본"],
+};
+
+/** 언어에 맞는 추천 나라를 앞에 두고 나머지는 원래 순서로 잇는다. */
+export function countriesFor(language: string): readonly string[] {
+  const first = LANGUAGE_COUNTRIES[language];
+  if (!first) return COUNTRIES;
+  return [...first, ...COUNTRIES.filter((name) => !first.includes(name))];
 }

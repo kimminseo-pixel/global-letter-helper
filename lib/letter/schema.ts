@@ -31,6 +31,12 @@ export const LANGUAGES = [
   { value: "ja", label: "일본어" },
 ] as const;
 
+/** 중국어를 고른 경우의 글자체 */
+export const CHINESE_SCRIPTS = [
+  { value: "simplified", label: "간체" },
+  { value: "traditional", label: "번체" },
+] as const;
+
 /** 공문 작성 목적. 값 이름은 letterType을 그대로 쓴다. */
 export const LETTER_TYPES = [
   { value: "attendance", label: "행사 참석 요청" },
@@ -84,6 +90,8 @@ export const letterRequestSchema = z.object({
   dateTime: optionalText(LIMITS.dateTime),
   place: optionalText(LIMITS.place),
   language: z.enum(values(LANGUAGES)).default(DEFAULT_LANGUAGE),
+  /** 중국어일 때만 쓰는 글자체. 값이 없으면 간체 */
+  chineseScript: z.enum(values(CHINESE_SCRIPTS)).default("simplified"),
   letterType: z.enum(values(LETTER_TYPES)).default(DEFAULT_LETTER_TYPE),
   /** 공문 작성 목적이 '기타'일 때 직접 적는 칸 */
   letterTypeNote: optionalText(LIMITS.letterTypeNote),

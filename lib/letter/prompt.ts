@@ -6,6 +6,7 @@ import "server-only";
 
 import { LENGTH_LIMITS } from "./checks";
 import {
+  CHINESE_SCRIPTS,
   FORMALITIES,
   LANGUAGES,
   LETTER_TYPES,
@@ -112,6 +113,7 @@ const LANGUAGE_FORMATS: Record<string, string[]> = {
     "- 수신처 유형이 정부기관·기타이면 公函 형식을 씁니다: subject는 「关于…的函」「关于邀请…的函」「关于…的复函」「关于…的感谢函」처럼 쓰고, recipientBlock은 主送机关 전체 명칭(직위·이름이 있으면 뒤에 붙임) 끝에 전각 쌍점 「：」을 찍습니다. body에는 인사말(您好 등)을 넣지 않고 「缘由 → 事项 → 结语」 순서로 씁니다. 사항이 여럿이면 「一、」「二、」, 하위는 「（一）」로 나눕니다. 结语는 「特此函达。」「请予支持为盼。」「敬请函复。」 중에서 고릅니다. senderBlock은 发函单位 전체 명칭(+ 직위·이름)을 씁니다.",
     "- 수신처 유형이 기업이면 商务信函 형식을 씁니다: subject는 事由 한 줄, recipientBlock은 公司全称(+ 职务 姓名), body는 「尊敬的+성+직무：」(이름·직무가 없으면 「敬启者：」) → 「您好！」 → 正文 → 「此致」「敬礼！」(두 줄)로 씁니다. senderBlock은 单位와 직위·이름을 씁니다.",
     "- subject(标题 쓰는 법): 공문 제목은 「发文机关+事由+文种」 세 요소로 구성합니다. 발신 기관명은 落款에 쓰므로 subject에는 「关于」로 시작하는 事由+文种 부분만 씁니다(예: 「关于邀请贵部出席贸易合作会议的函」「关于贵方来函事宜的复函」). 事由는 핵심 사항만 간결하게 개괄하고 과정·세부는 본문에 둡니다. 书名号(《》)를 쓰는 법규명이 아니면 제목에 문장부호를 쓰지 않습니다. 文种은 요청·협의·문의·통지는 「函」, 회신은 「复函」이며, 정식 공문 문종에 없는 「邀请函」은 公函에서는 「关于邀请…的函」로 씁니다.",
+    "- 받는 기관·사람이 입력되지 않았다면 recipientBlock은 빈 문자열로 두고 「主送机关：」 같은 이름표만 쓰지 않습니다.",
     "- 成文日期는 입력이 없으면 쓰지 않습니다. 날짜는 「2026年10月13日」처럼 씁니다.",
     "- 한국 정부 부처명은 중국에서 통용되는 표기(예: 韩国财政经济部)를 쓰고, 확실하지 않으면 uncertain에 \"확인 필요\"로 적습니다. 党政机关 공문 서식은 별도 국가 기준(GB/T 9704)이 있어 실제 발송 서식과 다를 수 있으므로 uncertain에 \"확인 필요\"로 적습니다.",
     "- 직함 대응: 장관 部长, 차관 副部长, 국장 司长(또는 局长), 과장 科长, 부장 部长, 사장 总经理, 대사 大使. 목록에 없으면 가장 널리 쓰이는 대응어를 쓰고 uncertain에 \"확인 필요\"로 적습니다.",
@@ -119,9 +121,16 @@ const LANGUAGE_FORMATS: Record<string, string[]> = {
 };
 
 /** 선택한 언어의 공문 형식만 포함한 지시문을 만든다. */
-function buildSystemPrompt(language: string): string {
+function buildSystemPrompt(language: string, chineseScript: string): string {
   const format = LANGUAGE_FORMATS[language] ?? LANGUAGE_FORMATS.en;
-  return [...COMMON_RULES, "", ...format].join("\n");
+  const script =
+    language === "zh" && chineseScript === "traditional"
+      ? [
+          "",
+          "[글자체: 번체(繁體字)] 위 중국어 지침의 간체 예시는 모두 번체자로 바꿔 씁니다(예: 关于→關於, 函→函, 复函→復函, 请→請, 贵→貴). 모든 출력(recipientBlock, subject, body, senderBlock)을 번체자로 쓰고 간체자를 섞지 않습니다. 대만·홍콩에서 통용되는 용어와 표기를 따릅니다. 公函 서식은 대륙 기준과 다를 수 있으므로 uncertain에 \"확인 필요\"로 적습니다.",
+        ]
+      : [];
+  return [...COMMON_RULES, "", ...format, ...script].join("\n");
 }
 
 export type LetterPrompt = {
@@ -146,13 +155,16 @@ export function buildLetterPrompt(request: LetterRequest): LetterPrompt {
     장소: request.place,
     기타_전달_사항: request.content,
     출력_언어: labelOf(LANGUAGES, request.language),
+    ...(request.language === "zh"
+      ? { 중국어_글자체: labelOf(CHINESE_SCRIPTS, request.chineseScript) }
+      : {}),
     공문_작성_목적: labelOf(LETTER_TYPES, request.letterType),
     공문_작성_목적_직접입력: request.letterTypeNote,
     격식_수준: labelOf(FORMALITIES, request.formality),
   };
 
   return {
-    system: buildSystemPrompt(request.language),
+    system: buildSystemPrompt(request.language, request.chineseScript),
     user: `다음 공문 정보로 초안을 작성해 주세요.\n${JSON.stringify(data, null, 2)}`,
   };
 }

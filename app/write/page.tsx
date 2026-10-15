@@ -18,7 +18,7 @@ export default function WritePage() {
         </h1>
         <Link
           href="/"
-          className="rounded-full border-2 border-foreground/30 px-5 py-2 text-base font-extrabold transition hover:bg-foreground/10"
+          className="rounded-xl border-2 border-foreground/30 px-5 py-2 text-base font-extrabold transition hover:bg-foreground/10"
         >
           ← 처음으로
         </Link>
