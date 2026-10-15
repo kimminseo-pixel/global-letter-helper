@@ -276,3 +276,63 @@ export function countriesFor(language: string): readonly string[] {
   if (!first) return COUNTRIES;
   return [...first, ...COUNTRIES.filter((name) => !first.includes(name))];
 }
+
+/** 행사·회담 제목에 이 말이 들어 있으면 해당 지역 나라를 목록 앞쪽에 추천한다. (인터넷 검색이 아니라 고정된 지역 분류) */
+const REGIONS: { keywords: string[]; countries: string[] }[] = [
+  {
+    keywords: ["아프리카", "Africa"],
+    countries: [
+      "가나", "가봉", "감비아", "기니", "기니비사우", "나미비아", "나이지리아", "남수단", "남아프리카공화국",
+      "니제르", "라이베리아", "레소토", "르완다", "리비아", "마다가스카르", "말라위", "말리", "모로코",
+      "모리셔스", "모리타니", "모잠비크", "베냉", "보츠와나", "부룬디", "부르키나파소", "상투메프린시페",
+      "세네갈", "세이셸", "소말리아", "수단", "시에라리온", "알제리", "앙골라", "에리트레아", "에스와티니",
+      "에티오피아", "우간다", "이집트", "잠비아", "적도기니", "중앙아프리카공화국", "지부티", "짐바브웨",
+      "차드", "카메룬", "카보베르데", "케냐", "코모로", "코트디부아르", "콩고공화국", "콩고민주공화국",
+      "탄자니아", "토고", "튀니지",
+    ],
+  },
+  {
+    keywords: ["아세안", "ASEAN", "동남아"],
+    countries: ["인도네시아", "말레이시아", "필리핀", "싱가포르", "태국", "브루나이", "베트남", "라오스", "미얀마", "캄보디아", "동티모르"],
+  },
+  {
+    keywords: ["중동", "걸프", "GCC"],
+    countries: ["사우디아라비아", "아랍에미리트", "카타르", "쿠웨이트", "바레인", "오만", "이란", "이라크", "요르단", "레바논", "이스라엘", "튀르키예", "예멘", "시리아"],
+  },
+  {
+    keywords: ["중남미", "라틴아메리카", "남미"],
+    countries: ["멕시코", "브라질", "아르헨티나", "칠레", "콜롬비아", "페루", "에콰도르", "우루과이", "파라과이", "볼리비아", "베네수엘라", "파나마", "코스타리카", "과테말라", "쿠바", "도미니카공화국"],
+  },
+  {
+    keywords: ["중앙아시아", "중앙아"],
+    countries: ["카자흐스탄", "우즈베키스탄", "키르기스스탄", "타지키스탄", "투르크메니스탄", "몽골"],
+  },
+  {
+    keywords: ["유럽", "EU", "Europe"],
+    countries: ["독일", "프랑스", "영국", "이탈리아", "스페인", "네덜란드", "폴란드", "스웨덴", "벨기에", "오스트리아", "스위스", "체코", "헝가리", "덴마크", "핀란드", "노르웨이", "아일랜드", "포르투갈", "그리스", "루마니아"],
+  },
+  {
+    keywords: ["태평양", "오세아니아", "Pacific"],
+    countries: ["오스트레일리아(호주)", "뉴질랜드", "피지", "파푸아뉴기니", "사모아", "통가", "바누아투", "솔로몬제도", "팔라우", "마셜제도", "미크로네시아", "키리바시", "투발루", "나우루"],
+  },
+];
+
+/** 제목 글 안의 말에 맞는 지역 나라 목록 (없으면 빈 목록) */
+export function countriesForText(text: string): readonly string[] {
+  const lower = text.toLowerCase();
+  const found = new Set<string>();
+  for (const region of REGIONS) {
+    if (region.keywords.some((k) => lower.includes(k.toLowerCase()))) {
+      region.countries.filter((c) => COUNTRIES.includes(c)).forEach((c) => found.add(c));
+    }
+  }
+  return Array.from(found);
+}
+
+/** 언어별 추천 → 제목 글에서 읽은 지역 → 나머지 순으로 나라 목록을 만든다. */
+export function suggestedCountries(language: string, text: string): readonly string[] {
+  const byLanguage = LANGUAGE_COUNTRIES[language] ?? [];
+  const byText = countriesForText(text);
+  const head = [...byText, ...byLanguage.filter((c) => !byText.includes(c))];
+  return [...head, ...COUNTRIES.filter((c) => !head.includes(c))];
+}

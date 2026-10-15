@@ -10,7 +10,7 @@ import {
   CITIES,
   COUNTRIES,
   TITLES,
-  countriesFor,
+  suggestedCountries,
   parseDateInput,
 } from "@/lib/letter/options";
 import {
@@ -287,8 +287,8 @@ export default function LetterForm() {
     setForm((prev) => ({ ...prev, [key]: value }));
 
   const countryOptions = useMemo(
-    () => countriesFor(form.language),
-    [form.language],
+    () => suggestedCountries(form.language, `${form.purpose} ${form.content}`),
+    [form.language, form.purpose, form.content],
   );
   const date = useMemo(() => parseDateInput(form.dateText), [form.dateText]);
   const place = [form.placeCountry, form.placeCity, form.placeDetail]
