@@ -2,8 +2,8 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
-  --accent: #1d4ed8;
+  --foreground: #191f28;
+  --accent: #3182f6;
   --accent-foreground: #ffffff;
 }
 
@@ -20,7 +20,7 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
-    --accent: #60a5fa;
+    --accent: #4593fc;
     --accent-foreground: #0a0a0a;
   }
 }
@@ -33,10 +33,12 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
+  /* 둥근 글씨체(주아). 이미 굵은 글씨체라 브라우저가 한 번 더 굵게 만들지 않도록 막는다. */
   font-family:
-    var(--font-geist-sans), "Apple SD Gothic Neo", "Malgun Gothic",
+    var(--font-rounded), "Apple SD Gothic Neo", "Malgun Gothic",
     "Noto Sans KR", system-ui, sans-serif;
   font-weight: 700;
+  font-synthesis: none;
   line-height: 1.6;
 }
 
@@ -99,4 +101,30 @@ select,
 button {
   font: inherit;
   font-weight: 700;
+}
+
+/* 화면에 들어올 때 아래에서 살짝 올라오며 나타난다(지원하지 않는 브라우저에서는 그냥 보인다). */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: reveal-up linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 45%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    animation: none;
+  }
 }

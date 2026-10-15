@@ -5,17 +5,15 @@ import Link from "next/link";
 const MENUS = [
   { href: "/", label: "홈" },
   { href: "/write", label: "공문 작성하기" },
-  { href: "/#guide", label: "이용 안내" },
 ] as const;
 
 export default function SiteHeader() {
   return (
     <header>
-      <div className="bg-[#0b2a5b] px-4 py-1.5 text-center text-xs font-bold text-white sm:px-6">
-        AI 공문 초안 작성 도우미입니다. 발송 전 확인과 최종 판단은 담당자가
-        합니다.
+      <div className="bg-foreground/10 px-4 py-1.5 text-center text-xs font-bold text-foreground/70 sm:px-6">
+        AI가 만든 초안이에요. 보내기 전에 꼭 확인해 주세요.
       </div>
-      <div className="border-b-2 border-foreground/10 bg-background">
+      <div className="bg-foreground/5">
         <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <Link href="/" className="flex items-center gap-3">
             <Image
@@ -36,7 +34,7 @@ export default function SiteHeader() {
                 <li key={menu.href}>
                   <Link
                     href={menu.href}
-                    className="rounded-full px-4 py-2 text-base font-extrabold transition hover:bg-foreground/10"
+                    className="rounded-full px-5 py-2.5 text-xl font-extrabold transition hover:bg-foreground/10"
                   >
                     {menu.label}
                   </Link>
