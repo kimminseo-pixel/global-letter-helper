@@ -35,6 +35,8 @@ export default function PdfLetterForm() {
   const [letterType, setLetterType] = useState("");
   const [letterTypeNote, setLetterTypeNote] = useState("");
   const [purpose, setPurpose] = useState("");
+  const [recipientOrg, setRecipientOrg] = useState("");
+  const [recipientName, setRecipientName] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ErrorState | null>(null);
@@ -51,6 +53,10 @@ export default function PdfLetterForm() {
     if (file === null) missing.file = ["PDF 파일을 올려 주세요"];
     else if (file.size > MAX_BYTES)
       missing.file = ["PDF 파일은 4MB 이하로 올려 주세요"];
+    if (recipientOrg.trim() === "" && recipientName.trim() === "")
+      missing.recipientOrg = [
+        "누구에게 보내는지 받는 기관이나 받는 사람을 적어 주세요",
+      ];
     if (language === "") missing.language = ["언어를 선택해 주세요"];
     if (language === "zh" && chineseScript === "")
       missing.chineseScript = ["간체 또는 번체를 선택해 주세요"];
@@ -76,6 +82,8 @@ export default function PdfLetterForm() {
     body.append("letterType", letterType);
     body.append("letterTypeNote", letterType === "other" ? letterTypeNote : "");
     body.append("purpose", purpose);
+    body.append("recipientOrg", recipientOrg);
+    body.append("recipientName", recipientName);
 
     try {
       const response = await fetch("/api/letters/pdf", { method: "POST", body });
@@ -193,8 +201,23 @@ export default function PdfLetterForm() {
             maxLength={LIMITS.letterTypeNote}
           />
         ) : null}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <TextField
+            label="⑥ 받는 기관 (기관·사람 중 하나는 꼭)"
+            value={recipientOrg}
+            onChange={setRecipientOrg}
+            maxLength={LIMITS.recipientOrg}
+            error={fieldError("recipientOrg")}
+          />
+          <TextField
+            label="받는 사람"
+            value={recipientName}
+            onChange={setRecipientName}
+            maxLength={LIMITS.recipientName}
+          />
+        </div>
         <TextField
-          label="⑥ 덧붙일 요청 (선택)"
+          label="⑦ 덧붙일 요청 (선택)"
           value={purpose}
           onChange={setPurpose}
           maxLength={LIMITS.purpose}

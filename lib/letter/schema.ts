@@ -96,7 +96,16 @@ export const letterRequestSchema = z.object({
   /** 공문 작성 목적이 '기타'일 때 직접 적는 칸 */
   letterTypeNote: optionalText(LIMITS.letterTypeNote),
   formality: z.enum(values(FORMALITIES)).default(DEFAULT_FORMALITY),
-});
+}).refine(
+  (value) =>
+    [value.recipientOrg, value.recipientName, value.recipientTitle].some(
+      (text) => text.trim() !== "",
+    ),
+  {
+    message: "누구에게 보내는지 받는 기관이나 받는 사람을 적어 주세요",
+    path: ["recipientOrg"],
+  },
+);
 
 /** 화면이 보내는 값 (기본값 적용 전) */
 export type LetterRequestInput = z.input<typeof letterRequestSchema>;

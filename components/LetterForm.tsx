@@ -533,7 +533,7 @@ export default function LetterForm() {
               maxLength={LIMITS.country}
             />
             <TextField
-              label="받는 기관"
+              label="받는 기관 (기관·사람 중 하나는 꼭)"
               value={form.recipientOrg}
               onChange={set("recipientOrg")}
               maxLength={LIMITS.recipientOrg}

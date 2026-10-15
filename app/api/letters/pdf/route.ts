@@ -72,6 +72,8 @@ export async function POST(request: Request): Promise<Response> {
     letterType: text("letterType") || undefined,
     letterTypeNote: text("letterTypeNote"),
     purpose: note === "" ? DEFAULT_PURPOSE : note,
+    recipientOrg: text("recipientOrg"),
+    recipientName: text("recipientName"),
   });
   if (!parsed.success) {
     const { fieldErrors } = parsed.error.flatten();
