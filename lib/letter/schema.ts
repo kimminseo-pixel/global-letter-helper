@@ -12,6 +12,8 @@ export const LIMITS = {
   senderName: 100,
   purpose: 200,
   content: 2000,
+  recipientTypeNote: 100,
+  letterTypeNote: 100,
 } as const;
 
 /** 선택 항목: 코드 값, 화면 라벨 (DESIGN §2.2) */
@@ -27,10 +29,13 @@ export const LANGUAGES = [
   { value: "ja", label: "일본어" },
 ] as const;
 
+/** 공문 작성 목적. 값 이름은 letterType을 그대로 쓴다. */
 export const LETTER_TYPES = [
+  { value: "attendance", label: "행사 참석 요청" },
   { value: "request", label: "협조 요청" },
   { value: "reply", label: "회신" },
   { value: "thanks", label: "감사" },
+  { value: "other", label: "기타" },
 ] as const;
 
 export const FORMALITIES = [
@@ -59,6 +64,8 @@ export const letterRequestSchema = z.object({
   recipientType: z.enum(values(RECIPIENT_TYPES), {
     error: "수신처 유형을 선택해 주세요",
   }),
+  /** 대상 기관이 '기타'일 때 어떤 기관인지 적는 칸 (예: 국제기구, 대학, 협회) */
+  recipientTypeNote: optionalText(LIMITS.recipientTypeNote),
   country: optionalText(LIMITS.country),
   recipientOrg: optionalText(LIMITS.recipientOrg),
   recipientName: optionalText(LIMITS.recipientName),
@@ -73,6 +80,8 @@ export const letterRequestSchema = z.object({
   content: optionalText(LIMITS.content),
   language: z.enum(values(LANGUAGES)).default(DEFAULT_LANGUAGE),
   letterType: z.enum(values(LETTER_TYPES)).default(DEFAULT_LETTER_TYPE),
+  /** 공문 작성 목적이 '기타'일 때 직접 적는 칸 */
+  letterTypeNote: optionalText(LIMITS.letterTypeNote),
   formality: z.enum(values(FORMALITIES)).default(DEFAULT_FORMALITY),
 });
 

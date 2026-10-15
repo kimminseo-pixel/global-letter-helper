@@ -13,7 +13,7 @@ export default function Home() {
             글로벌 공문 도우미
           </p>
           <h1 className="text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
-            외국에 보낼 공문,
+            외국에 보낼 공문
             <br />
             격식에 맞게 한 번에
           </h1>

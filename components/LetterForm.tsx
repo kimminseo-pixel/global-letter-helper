@@ -24,7 +24,9 @@ type FormState = {
   language: string;
   formality: string;
   recipientType: string;
+  recipientTypeNote: string;
   letterType: string;
+  letterTypeNote: string;
   purpose: string;
   content: string;
   country: string;
@@ -39,7 +41,9 @@ const INITIAL: FormState = {
   language: DEFAULT_LANGUAGE,
   formality: DEFAULT_FORMALITY,
   recipientType: "",
+  recipientTypeNote: "",
   letterType: DEFAULT_LETTER_TYPE,
+  letterTypeNote: "",
   purpose: "",
   content: "",
   country: "",
@@ -160,7 +164,14 @@ export default function LetterForm() {
       const response = await fetch("/api/letters", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        // '기타'를 고르지 않은 경우의 직접 입력 칸 값은 보내지 않는다.
+        body: JSON.stringify({
+          ...form,
+          recipientTypeNote:
+            form.recipientType === "other" ? form.recipientTypeNote : "",
+          letterTypeNote:
+            form.letterType === "other" ? form.letterTypeNote : "",
+        }),
       });
       const body: unknown = await response.json().catch(() => null);
 
@@ -216,20 +227,40 @@ export default function LetterForm() {
           onChange={set("formality")}
         />
         <ChoiceGroup
-          legend="③ 대상 (받는 곳)"
+          legend="③ 대상 기관"
           name="recipientType"
           options={RECIPIENT_TYPES}
           value={form.recipientType}
           onChange={set("recipientType")}
           error={fieldError("recipientType")}
         />
+        {form.recipientType === "other" ? (
+          <TextField
+            label="어떤 기관인가요? (기타)"
+            value={form.recipientTypeNote}
+            onChange={set("recipientTypeNote")}
+            maxLength={LIMITS.recipientTypeNote}
+            placeholder="예: 국제기구, 대학, 협회, 연구소"
+            error={fieldError("recipientTypeNote")}
+          />
+        ) : null}
         <ChoiceGroup
-          legend="공문 종류"
+          legend="공문 작성 목적"
           name="letterType"
           options={LETTER_TYPES}
           value={form.letterType}
           onChange={set("letterType")}
         />
+        {form.letterType === "other" ? (
+          <TextField
+            label="작성 목적을 직접 적어 주세요 (기타)"
+            value={form.letterTypeNote}
+            onChange={set("letterTypeNote")}
+            maxLength={LIMITS.letterTypeNote}
+            placeholder="예: 계약 연장 문의"
+            error={fieldError("letterTypeNote")}
+          />
+        ) : null}
 
         <div className="flex flex-col gap-4">
           <h2 className="text-lg font-extrabold">④ 내용</h2>

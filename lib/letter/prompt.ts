@@ -27,7 +27,7 @@ const SYSTEM_PROMPT = [
   "입력에 없는 날짜·금액·이름·수치는 지어내지 않습니다.",
   "",
   "[공문 구조 — 네 부분으로 나누어 씁니다. 서버가 이 순서로 이어 붙이므로 각 부분은 비워 두지 않습니다]",
-  "1) recipientBlock(수신): 수신 국가·기관·담당자와 직함",
+  "1) recipientBlock(수신): 수신 국가·기관·담당자와 직함만 씁니다. 인사말(Dear … 등)은 넣지 않고, 입력된 수신 정보가 없으면 빈 문자열로 둡니다",
   "2) subject(제목): 한 줄",
   "3) body(본문): 인사 → 목적 → 요청 사항 → 맺음 순서. 수신·제목·발신 내용은 넣지 않습니다",
   "4) senderBlock(발신): 발신 기관·담당자",
@@ -44,6 +44,14 @@ const SYSTEM_PROMPT = [
   "- 정부기관: 공식 직위와 경칭을 우선합니다. 직위만 입력되고 이름이 없으면 직위로 부릅니다(예: Dear Minister, / Dear Director-General,). 모호하면 uncertain에 \"확인 필요\"로 적습니다.",
   "- 기업: 간결한 비즈니스 서신체를 씁니다. 이름이 없으면 부서·담당 부서명 또는 중립 인사말을 씁니다.",
   "- 기타(국제기구·대학·협회 등): 입력된 기관의 성격에 맞는 호칭을 쓰고, 확신이 없으면 uncertain에 \"확인 필요\"로 적습니다.",
+  "",
+  "[공문 작성 목적별 본문]",
+  "- 행사 참석 요청: 행사명·일시·장소는 입력된 것만 쓰고 없으면 [ ]로 비웁니다. 참석 가능 여부를 알려 달라는 요청으로 맺습니다.",
+  "- 협조 요청: 요청 사항을 구체적으로 쓰고, 기한은 입력된 경우에만 적습니다.",
+  "- 회신: 원 공문의 날짜·문서번호가 입력되지 않았으면 [ ]로 비우고, 회신 내용을 명확히 씁니다.",
+  "- 감사: 요청 사항 자리에 감사 내용을 쓰고 새로운 요청은 넣지 않습니다.",
+  "- 기타: 사용자가 직접 입력한 작성 목적(공문_작성_목적_직접입력)을 따릅니다. 비어 있으면 목적·핵심 내용에 맞춰 씁니다.",
+  "- 수신처 유형이 '기타'이면 수신처_유형_설명에 적힌 기관 성격에 맞는 호칭을 씁니다.",
   "",
   "[격식 수준별 어조]",
   "- 일반 업무: 정중하되 간결하게, 인사말과 맺음은 짧게 씁니다.",
@@ -96,6 +104,8 @@ export type LetterPrompt = {
 export function buildLetterPrompt(request: LetterRequest): LetterPrompt {
   const data = {
     수신처_유형: labelOf(RECIPIENT_TYPES, request.recipientType),
+    // '기타'를 고른 경우 사용자가 적은 기관 설명 (예: 국제기구, 대학, 협회)
+    수신처_유형_설명: request.recipientTypeNote,
     수신_국가: request.country,
     수신_기관: request.recipientOrg,
     수신_담당자: request.recipientName,
@@ -105,7 +115,8 @@ export function buildLetterPrompt(request: LetterRequest): LetterPrompt {
     목적: request.purpose,
     핵심_내용: request.content,
     출력_언어: labelOf(LANGUAGES, request.language),
-    공문_종류: labelOf(LETTER_TYPES, request.letterType),
+    공문_작성_목적: labelOf(LETTER_TYPES, request.letterType),
+    공문_작성_목적_직접입력: request.letterTypeNote,
     격식_수준: labelOf(FORMALITIES, request.formality),
   };
 
