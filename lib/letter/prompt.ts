@@ -62,6 +62,7 @@ const COMMON_RULES = [
   `- 분량은 A4 한 장 이내입니다: 영어 약 ${LENGTH_LIMITS.en.max}${LENGTH_LIMITS.en.unit}, 중국어 약 ${LENGTH_LIMITS.zh.max}${LENGTH_LIMITS.zh.unit}, 일본어 약 ${LENGTH_LIMITS.ja.max}${LENGTH_LIMITS.ja.unit} 이내.`,
   "- 입력된 수신처·발신 기관·담당자·요청 사항·일시·장소·기타 전달 사항을 빠뜨리지 않고 모두 반영합니다.",
   "- 입력은 단답이나 명사구일 수 있습니다. 의미를 바꾸거나 새 사실을 더하지 않고, 격식 있는 완결된 문장으로 풀어 씁니다.",
+  "- 초안(recipientBlock, subject, body, senderBlock)에는 한글을 한 글자도 남기지 않습니다. 한국어 기관명·사람 이름·직함도 선택한 언어로 옮깁니다: 영어는 국립국어원 로마자 표기(예: 한국무역협회 → Korea International Trade Association 등 통용 영문명, 사람 이름은 Kim Cheol-su), 일본어는 통용되는 일본어 표기 또는 가타카나(예: 김철수 → キム・チョルス), 중국어는 통용되는 중국어 표기 또는 한자(한자를 확실히 모르면 로마자). 옮긴 이름과 기관명은 uncertain에 \"확인 필요\"로 적습니다.",
   "- 일시·장소는 입력된 값만 문장에 넣고, 입력이 없으면 만들지 않습니다.",
   "- 확신이 없는 정보(국가·기관명·직함·날짜 등 입력에 없거나 불분명한 것)는 초안에 쓰지 않고 그 부분을 통째로 뺍니다. 「[Country unspecified]」「[미정]」「unspecified」「TBD」「不明」처럼 모른다는 표시를 초안 안에 남기지 않습니다. 확인이 필요한 점은 uncertain·missingItems에만 적습니다.",
   "- 입력하지 않은 칸은 [ ]로 표시하지 말고 그 항목을 자연스럽게 생략합니다. 초안에는 빈 대괄호를 남기지 않습니다.",
