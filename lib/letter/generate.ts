@@ -56,13 +56,11 @@ function createClient(): OpenAI {
   return new OpenAI({ apiKey, maxRetries: 0 });
 }
 
+/** OPENAI_MODEL이 없을 때 쓰는 기본 모델 (이 키로 사용 가능함을 확인한 모델) */
+const DEFAULT_MODEL = "gpt-4.1-mini";
+
 function readModel(): string {
-  const model = process.env.OPENAI_MODEL;
-  if (!model) {
-    console.error("[letters] OPENAI_MODEL이 설정되지 않았습니다.");
-    throw new LetterError("INTERNAL");
-  }
-  return model;
+  return process.env.OPENAI_MODEL || DEFAULT_MODEL;
 }
 
 /** OpenAI 오류를 화면용 오류 코드로 바꾼다. 요청·응답 내용은 로그에 남기지 않는다. */
@@ -114,11 +112,12 @@ export async function generateLetter(
       );
 
       const parts = response.output_parsed;
+      // 제목·본문은 반드시 있어야 한다. 수신·발신 정보는 사용자가 입력하지 않으면 AI가 비워 둘 수
+      // 있으므로(PRD: 입력이 짧아도 초안은 만든다) 빈 부분은 [ ]로 채워 구조를 유지한다.
       const complete =
         parts !== null &&
-        [parts.recipientBlock, parts.subject, parts.body, parts.senderBlock].every(
-          (part) => part.trim() !== "",
-        );
+        parts.subject.trim() !== "" &&
+        parts.body.trim() !== "";
       const checked = aiLetterSchema.safeParse(
         complete
           ? {
@@ -128,7 +127,7 @@ export async function generateLetter(
                 parts.body,
                 parts.senderBlock,
               ]
-                .map((part) => part.trim())
+                .map((part) => part.trim() || "[ ]")
                 .join("\n\n"),
               koreanVersion: parts.koreanVersion,
               reviewPoints: parts.reviewPoints,

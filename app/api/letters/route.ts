@@ -1,6 +1,6 @@
 // Design Ref: §4.1 POST /api/letters, §4.2 오류 응답 — 공문 생성 API
-import { requireUser } from "@/lib/auth/require-user";
 import { LetterError, generateLetter } from "@/lib/letter/generate";
+import { allowRequest, clientKey } from "@/lib/letter/rate-limit";
 import {
   ERROR_CODES,
   letterRequestSchema,
@@ -24,9 +24,9 @@ function errorResponse(
 }
 
 export async function POST(request: Request): Promise<Response> {
-  // Plan SC: 가입한 사용자만 접근 — 입력을 읽기 전에 로그인부터 확인한다 (DESIGN §2.1 (2)).
-  const user = await requireUser();
-  if (!user) return errorResponse("UNAUTHORIZED");
+  // 로그인 없이 쓰는 서비스로 결정했으므로 로그인 검사는 하지 않는다(2026-10-15).
+  // 대신 비용 남용을 막기 위해 같은 접속자의 호출 횟수를 제한한다.
+  if (!allowRequest(clientKey(request))) return errorResponse("RATE_LIMITED");
 
   let body: unknown;
   try {
