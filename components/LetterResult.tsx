@@ -2,7 +2,7 @@
 
 // Design Ref: §1.1 결과 영역, §2.3 응답 — 초안(수정 가능·복사), 한국어 확인본, 검토 포인트, 빠진 항목 제안.
 // 사용자 입력과 AI 출력은 텍스트로만 그린다(HTML로 삽입하지 않음).
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import type { LetterResponse } from "@/lib/letter/schema";
 
@@ -53,6 +53,8 @@ export default function LetterResult({
   const [subject, setSubject] = useState(result.subject);
   const [draft, setDraft] = useState(result.draft);
   const [copied, setCopied] = useState<"all" | "subject" | "draft" | null>(null);
+  const [showCopyWarning, setShowCopyWarning] = useState(false);
+  const warningTimer = useRef<number | null>(null);
   // 빈칸은 [ ]뿐 아니라 [발신 기관명]처럼 이름이 붙은 대괄호도 함께 센다.
   const blanks = (draft.match(/\[[^\]\n]{0,30}\]/g) ?? []).length;
 
@@ -63,6 +65,13 @@ export default function LetterResult({
         : kind === "subject"
           ? subject
           : draft;
+    // 복사하면 AI 초안이라는 점과 발송 전 확인을 빨간 경고로 알린다.
+    setShowCopyWarning(true);
+    if (warningTimer.current !== null) window.clearTimeout(warningTimer.current);
+    warningTimer.current = window.setTimeout(
+      () => setShowCopyWarning(false),
+      12000,
+    );
     try {
       await navigator.clipboard.writeText(text);
       setCopied(kind);
@@ -139,6 +148,17 @@ export default function LetterResult({
             </button>
           </div>
         </div>
+        {showCopyWarning ? (
+          <div
+            role="alert"
+            className="flex items-start gap-3 rounded-xl border-2 border-red-600 bg-red-600/10 p-4 text-base font-extrabold text-red-700 dark:text-red-400"
+          >
+            <span aria-hidden="true" className="text-xl leading-none">
+              ⚠
+            </span>
+            <span>AI가 만든 초안이에요. 보내기 전에 꼭 확인해 주세요.</span>
+          </div>
+        ) : null}
       </Section>
 
       <Section title="한국어 확인본">

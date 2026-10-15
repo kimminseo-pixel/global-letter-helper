@@ -127,3 +127,73 @@ button {
     animation: none;
   }
 }
+
+/* ── 시작 화면 움직이는 그림 (8초 주기) ── */
+@keyframes ha-grow-subject {
+  0%, 8% { width: 0; }
+  22%, 92% { width: 70%; }
+  100% { width: 0; }
+}
+@keyframes ha-grow-l1 {
+  0%, 20% { width: 0; }
+  36%, 92% { width: 100%; }
+  100% { width: 0; }
+}
+@keyframes ha-grow-l2 {
+  0%, 34% { width: 0; }
+  50%, 92% { width: 100%; }
+  100% { width: 0; }
+}
+@keyframes ha-grow-l3 {
+  0%, 48% { width: 0; }
+  64%, 92% { width: 100%; }
+  100% { width: 0; }
+}
+@keyframes ha-grow-l4 {
+  0%, 62% { width: 0; }
+  76%, 92% { width: 100%; }
+  100% { width: 0; }
+}
+@keyframes ha-chip-active {
+  0%, 30% { background: #1d2b64; color: #fff; }
+  33.3%, 100% { background: transparent; color: #1d2b64; }
+}
+@keyframes ha-working {
+  0%, 74% { opacity: 1; }
+  78%, 100% { opacity: 0; }
+}
+@keyframes ha-done {
+  0%, 76% { opacity: 0; transform: scale(0.9); }
+  82%, 92% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; }
+}
+@keyframes ha-fly {
+  0%, 84% { opacity: 0; transform: translate(-30%, -10%) rotate(-12deg) scale(0.8); }
+  88% { opacity: 1; }
+  100% { opacity: 0; transform: translate(220%, -280%) rotate(-12deg) scale(1.1); }
+}
+
+.ha-bar { width: 0; }
+.ha-subject { animation: ha-grow-subject 8s ease-in-out infinite; }
+.ha-l1 { animation: ha-grow-l1 8s ease-in-out infinite; }
+.ha-l2 { animation: ha-grow-l2 8s ease-in-out infinite; }
+.ha-l3 { animation: ha-grow-l3 8s ease-in-out infinite; }
+.ha-l4 { animation: ha-grow-l4 8s ease-in-out infinite; }
+.ha-chip { background: transparent; }
+.ha-chip-1 { animation: ha-chip-active 8s steps(1, end) infinite; }
+.ha-chip-2 { animation: ha-chip-active 8s steps(1, end) infinite; animation-delay: -5.34s; }
+.ha-chip-3 { animation: ha-chip-active 8s steps(1, end) infinite; animation-delay: -2.67s; }
+.ha-working { animation: ha-working 8s ease-in-out infinite; }
+.ha-done { opacity: 0; animation: ha-done 8s ease-in-out infinite; }
+.ha-plane { opacity: 0; animation: ha-fly 8s ease-in infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ha-subject { width: 70%; animation: none; }
+  .ha-l1, .ha-l2, .ha-l3 { width: 100%; animation: none; }
+  .ha-l4 { width: 100%; animation: none; }
+  .ha-chip-1 { background: #1d2b64; color: #fff; animation: none; }
+  .ha-chip-2, .ha-chip-3 { animation: none; }
+  .ha-working { opacity: 0; animation: none; }
+  .ha-done { opacity: 1; animation: none; }
+  .ha-plane { display: none; }
+}

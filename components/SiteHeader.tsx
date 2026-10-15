@@ -10,7 +10,7 @@ const MENUS = [
 export default function SiteHeader() {
   return (
     <header>
-      <div className="bg-foreground/10 px-4 py-1.5 text-center text-xs font-bold text-foreground/70 sm:px-6">
+      <div className="bg-[#1d2b64] px-4 py-2 text-center text-sm font-extrabold text-white sm:px-6">
         AI가 만든 초안이에요. 보내기 전에 꼭 확인해 주세요.
       </div>
       <div className="bg-foreground/5">

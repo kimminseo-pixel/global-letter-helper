@@ -164,12 +164,14 @@ function formatDateTyping(input: string): string {
   return `${digits.slice(0, 4)}.${digits.slice(4, 6)}.${digits.slice(6)}`;
 }
 
-const OTHER = "__other__";
-
-/** 목록에서 고르거나, 목록에 없으면 '기타'를 눌러 직접 입력하는 칸 */
-function SelectWithOther({
+/**
+ * 글자를 치면 바로 일치하는 항목이 목록에 나타나는 입력 칸.
+ * 목록에서 고르거나, 목록에 없으면(기타) 그대로 직접 입력하면 된다.
+ */
+function ComboField({
   label,
   ariaLabel,
+  listId,
   options,
   value,
   onChange,
@@ -177,52 +179,31 @@ function SelectWithOther({
 }: {
   label?: string;
   ariaLabel: string;
+  listId: string;
   options: readonly string[];
   value: string;
   onChange: (value: string) => void;
   maxLength: number;
 }) {
-  const [custom, setCustom] = useState(false);
-  const selected = custom ? OTHER : options.includes(value) ? value : "";
-
   return (
-    <div className="flex flex-col gap-1.5">
+    <label className="flex flex-col gap-1.5">
       {label ? <span className="text-base font-extrabold">{label}</span> : null}
-      <select
+      <input
+        type="text"
         aria-label={ariaLabel}
-        value={selected}
-        onChange={(event) => {
-          const next = event.target.value;
-          if (next === OTHER) {
-            setCustom(true);
-            onChange("");
-          } else {
-            setCustom(false);
-            onChange(next);
-          }
-        }}
+        list={listId}
+        value={value}
+        maxLength={maxLength}
+        autoComplete="off"
+        onChange={(event) => onChange(event.target.value)}
         className={FIELD_CLASS}
-      >
-        <option value="" />
+      />
+      <datalist id={listId}>
         {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
+          <option key={option} value={option} />
         ))}
-        <option value={OTHER}>기타 (직접 입력)</option>
-      </select>
-      {custom ? (
-        <input
-          type="text"
-          aria-label={`${ariaLabel} 직접 입력`}
-          value={value}
-          maxLength={maxLength}
-          autoFocus
-          onChange={(event) => onChange(event.target.value)}
-          className={FIELD_CLASS}
-        />
-      ) : null}
-    </div>
+      </datalist>
+    </label>
   );
 }
 
@@ -456,9 +437,10 @@ export default function LetterForm() {
           />
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <SelectWithOther
+            <ComboField
               label="받는 나라"
               ariaLabel="받는 나라"
+              listId="recipient-country-list"
               options={COUNTRIES}
               value={form.country}
               onChange={set("country")}
@@ -478,9 +460,10 @@ export default function LetterForm() {
               maxLength={LIMITS.recipientName}
               error={fieldError("recipientName")}
             />
-            <SelectWithOther
+            <ComboField
               label="받는 사람 직함"
               ariaLabel="받는 사람 직함"
+              listId="recipient-title-list"
               options={TITLES}
               value={form.recipientTitle}
               onChange={set("recipientTitle")}
