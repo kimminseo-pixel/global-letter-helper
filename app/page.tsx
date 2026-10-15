@@ -58,7 +58,7 @@ export default function Home() {
               <span className="hero-label-before absolute left-0 top-0 rounded-full bg-white/20 px-4 py-2 text-base font-extrabold text-white backdrop-blur">
                 손으로 쓰던 공문
               </span>
-              <span className="hero-after hero-label-after absolute left-0 top-0 whitespace-nowrap rounded-full bg-accent px-4 py-2 text-base font-extrabold text-accent-foreground">
+              <span className="hero-after hero-label-after absolute left-0 top-0 whitespace-nowrap rounded-full bg-white/20 px-4 py-2 text-base font-extrabold text-white backdrop-blur">
                 이제는 온라인으로 간편하게
               </span>
             </div>
