@@ -271,6 +271,12 @@ export default function LetterForm() {
   const [form, setForm] = useState<FormState>(INITIAL);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ErrorState | null>(null);
+  const [officials, setOfficials] = useState<
+    { title: string; name: string; organization: string; sourceUrl: string }[]
+  >([]);
+  const [officialsFor, setOfficialsFor] = useState("");
+  const [officialsLoading, setOfficialsLoading] = useState(false);
+  const [officialsError, setOfficialsError] = useState("");
   const [extras, setExtras] = useState<Recipient[]>([]);
   const [results, setResults] = useState<
     { label: string; result: LetterResponse }[]
@@ -353,6 +359,51 @@ export default function LetterForm() {
   ].filter((row) => row.value !== "");
 
   const fieldError = (key: string) => error?.fieldErrors[key]?.[0];
+
+  /** 받는 나라의 주요 인사를 웹 검색으로 찾아 미리 보여 준다(참고용). */
+  async function loadOfficials() {
+    const country = form.country.trim();
+    if (officialsLoading || country === "") return;
+    setOfficialsLoading(true);
+    setOfficialsError("");
+    setOfficials([]);
+    setOfficialsFor(country);
+    try {
+      const response = await fetch("/api/officials", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ country, topic: form.purpose }),
+      });
+      const body: unknown = await response.json().catch(() => null);
+      const list =
+        body !== null && typeof body === "object" && "officials" in body
+          ? (body as { officials: unknown }).officials
+          : null;
+      if (response.ok && Array.isArray(list)) {
+        setOfficials(
+          list.filter(
+            (item): item is {
+              title: string;
+              name: string;
+              organization: string;
+              sourceUrl: string;
+            } =>
+              typeof item === "object" &&
+              item !== null &&
+              typeof (item as { name?: unknown }).name === "string",
+          ),
+        );
+        if (list.length === 0)
+          setOfficialsError("확인된 인사를 찾지 못했어요. 직접 입력해 주세요.");
+      } else {
+        setOfficialsError("인사 정보를 가져오지 못했어요. 잠시 후 다시 시도해 주세요.");
+      }
+    } catch {
+      setOfficialsError("서버에 연결하지 못했어요.");
+    } finally {
+      setOfficialsLoading(false);
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -638,6 +689,73 @@ export default function LetterForm() {
               onChange={set("recipientTitle")}
               maxLength={LIMITS.recipientTitle}
             />
+
+            {COUNTRIES.includes(form.country.trim()) &&
+            form.country.trim() !== "대한민국" ? (
+              <div className="flex flex-col gap-2 sm:col-span-2">
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={loadOfficials}
+                    disabled={officialsLoading}
+                    className="h-10 rounded-xl border-2 border-accent px-4 text-base font-extrabold text-accent transition hover:bg-accent/10 disabled:opacity-50"
+                  >
+                    {officialsLoading
+                      ? "검색 중이에요…"
+                      : `${form.country.trim()} 장관 이름 미리 보기`}
+                  </button>
+                  <span className="text-xs font-bold text-foreground/60">
+                    웹 검색 결과(참고용)예요. 공식 사이트에서 꼭 확인해 주세요.
+                  </span>
+                </div>
+                {officialsError ? (
+                  <p role="alert" className="text-sm font-extrabold text-red-600">
+                    {officialsError}
+                  </p>
+                ) : null}
+                {officials.length > 0 && officialsFor === form.country.trim() ? (
+                  <ul className="flex flex-col gap-2">
+                    {officials.map((o) => (
+                      <li
+                        key={`${o.name}-${o.title}`}
+                        className="flex flex-wrap items-center justify-between gap-2 rounded-xl border-2 border-foreground/15 p-3"
+                      >
+                        <span className="text-base font-extrabold">
+                          {o.title} · {o.name}
+                          <span className="ml-2 text-sm font-bold text-foreground/60">
+                            {o.organization}
+                          </span>
+                        </span>
+                        <span className="flex items-center gap-2">
+                          <a
+                            href={o.sourceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm font-bold text-accent underline"
+                          >
+                            출처
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setForm((prev) => ({
+                                ...prev,
+                                recipientName: o.name,
+                                recipientTitle: o.title,
+                                recipientOrg: prev.recipientOrg || o.organization,
+                              }))
+                            }
+                            className="h-9 rounded-xl bg-accent px-3 text-sm font-extrabold text-accent-foreground"
+                          >
+                            받는 사람으로 쓰기
+                          </button>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            ) : null}
 
             {extras.map((r, index) => (
               <div
