@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@ssabrojs/hwpxjs": "^0.4.0",
     "docx": "^9.5.1",
     "next": "16.4.1",
     "openai": "^7.34.0",

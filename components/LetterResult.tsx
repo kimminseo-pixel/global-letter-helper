@@ -4,7 +4,12 @@
 // 사용자 입력과 AI 출력은 텍스트로만 그린다(HTML로 삽입하지 않음).
 import { useRef, useState } from "react";
 
-import { buildDocx, safeFileName } from "@/lib/letter/export-docx";
+import {
+  buildDocx,
+  buildHwpx,
+  safeFileName,
+  safeHwpxName,
+} from "@/lib/letter/export-docx";
 import type { LetterResponse } from "@/lib/letter/schema";
 
 function Section({
@@ -83,8 +88,8 @@ export default function LetterResult({
     }
   }
 
-  /** Word 파일(.docx)로 저장한다. 한글에서도 열 수 있다. */
-  async function saveWord() {
+  /** Word(.docx) 또는 한글(.hwpx) 파일로 저장한다. */
+  async function saveFile(kind: "word" | "hwp") {
     setShowCopyWarning(true);
     if (warningTimer.current !== null) window.clearTimeout(warningTimer.current);
     warningTimer.current = window.setTimeout(
@@ -92,11 +97,16 @@ export default function LetterResult({
       12000,
     );
     try {
-      const blob = await buildDocx(language, composeFull(language, subject, draft));
+      const text = composeFull(language, subject, draft);
+      const blob =
+        kind === "word"
+          ? await buildDocx(language, text)
+          : await buildHwpx(text, subject);
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = safeFileName(subject);
+      link.download =
+        kind === "word" ? safeFileName(subject) : safeHwpxName(subject);
       link.click();
       URL.revokeObjectURL(url);
     } catch {
@@ -170,10 +180,17 @@ export default function LetterResult({
             </button>
             <button
               type="button"
-              onClick={saveWord}
+              onClick={() => saveFile("word")}
               className="h-12 rounded-xl border-2 border-accent px-5 text-base font-extrabold text-accent transition hover:bg-accent/10"
             >
-              Word·한글 파일로 저장
+              Word로 저장 (.docx)
+            </button>
+            <button
+              type="button"
+              onClick={() => saveFile("hwp")}
+              className="h-12 rounded-xl border-2 border-accent px-5 text-base font-extrabold text-accent transition hover:bg-accent/10"
+            >
+              한글로 저장 (.hwpx)
             </button>
           </div>
         </div>

@@ -41,3 +41,18 @@ export function safeFileName(title: string): string {
   const cleaned = title.replace(/[\\/:*?"<>|\n\r]/g, " ").trim().slice(0, 40);
   return `${cleaned === "" ? "공문 초안" : cleaned}.docx`;
 }
+
+/** 한글(.hwpx) 파일로 만든다. 한글 2014 이상에서 열 수 있다. */
+export async function buildHwpx(text: string, title: string): Promise<Blob> {
+  const { HwpxWriter } = await import("@ssabrojs/hwpxjs");
+  const writer = new HwpxWriter();
+  const bytes = await writer.createFromPlainText(text, {
+    title: title.trim() === "" ? "공문 초안" : title.trim(),
+  });
+  return new Blob([new Uint8Array(bytes)], { type: "application/hwp+zip" });
+}
+
+/** .hwpx 파일 이름 */
+export function safeHwpxName(title: string): string {
+  return safeFileName(title).replace(/\.docx$/, ".hwpx");
+}

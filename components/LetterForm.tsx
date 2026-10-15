@@ -3,6 +3,7 @@
 // Design Ref: §1.1 화면 구성 — 왼쪽은 선택·입력, 오른쪽은 공문 초안.
 // 선택·입력이 바뀌면 오른쪽 미리보기가 바로 바뀌고, [초안 만들기]를 누르면 AI가 완성한 초안으로 바뀐다.
 // Plan SC: 필수 입력은 수신처 유형·요청 사항뿐, 입력값은 화면 메모리(React 상태)에만 둔다(브라우저 저장소 미사용).
+import Link from "next/link";
 import { useMemo, useState, type FormEvent } from "react";
 
 import {
@@ -70,18 +71,18 @@ const INITIAL: FormState = {
   content: "",
 };
 
-type ErrorState = { message: string; fieldErrors: Record<string, string[]> };
+export type ErrorState = { message: string; fieldErrors: Record<string, string[]> };
 
-const NETWORK_ERROR: ErrorState = {
+export const NETWORK_ERROR: ErrorState = {
   message:
     "서버에 연결하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.",
   fieldErrors: {},
 };
 
-const FIELD_CLASS =
+export const FIELD_CLASS =
   "h-12 w-full rounded-xl border-2 border-foreground/30 bg-background px-4 text-base focus-visible:border-accent focus-visible:outline-none";
 
-function ChoiceGroup({
+export function ChoiceGroup({
   legend,
   name,
   options,
@@ -163,7 +164,7 @@ function ChoiceGroup({
   );
 }
 
-function TextField({
+export function TextField({
   label,
   value,
   onChange,
@@ -434,6 +435,17 @@ export default function LetterForm() {
         onSubmit={handleSubmit}
         className="flex flex-col gap-6 rounded-3xl border-2 border-foreground/15 p-5 sm:p-7"
       >
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-accent/10 p-3">
+          <Link
+            href="/write/pdf"
+            className="inline-flex h-11 items-center rounded-xl bg-accent px-5 text-base font-extrabold text-accent-foreground transition hover:opacity-90"
+          >
+            PDF로 만들기
+          </Link>
+          <span className="text-base font-extrabold">
+            PDF 올려서 더욱 간편하게 만들어 보세요!
+          </span>
+        </div>
         <ChoiceGroup
           legend="① 언어 선택"
           name="language"
