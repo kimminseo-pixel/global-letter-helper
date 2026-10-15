@@ -82,12 +82,12 @@ export default function Home() {
         {MESSAGES.map((message) => (
           <div
             key={message.title}
-            className="reveal flex flex-col gap-3 rounded-[28px] bg-[rgba(7,25,76,0.05)] px-6 py-10 sm:px-12 sm:py-14"
+            className="reveal flex flex-col gap-3 rounded-[28px] bg-[rgba(7,25,76,0.05)] px-6 py-8 sm:px-10 sm:py-10"
           >
-            <h2 className="break-keep text-3xl font-extrabold leading-snug tracking-tight sm:text-5xl">
+            <h2 className="break-keep text-xl font-extrabold leading-snug tracking-tight sm:text-3xl">
               {message.title}
             </h2>
-            <p className="max-w-2xl break-keep text-lg font-bold leading-8 text-foreground/70 sm:text-xl">
+            <p className="max-w-2xl break-keep text-base font-bold leading-7 text-foreground/70 sm:text-lg">
               {message.body}
             </p>
           </div>

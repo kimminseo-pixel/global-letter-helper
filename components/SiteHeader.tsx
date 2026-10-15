@@ -34,7 +34,7 @@ export default function SiteHeader() {
                 <li key={menu.href}>
                   <Link
                     href={menu.href}
-                    className="rounded-full px-5 py-2.5 text-xl font-extrabold transition hover:bg-foreground/10"
+                    className="rounded-full px-6 py-3 text-2xl font-extrabold sm:text-3xl transition hover:bg-foreground/10"
                   >
                     {menu.label}
                   </Link>
