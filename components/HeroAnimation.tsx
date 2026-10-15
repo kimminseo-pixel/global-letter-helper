@@ -1,19 +1,28 @@
 // 시작 화면의 움직이는 그림(코드 애니메이션): 공문이 한 줄씩 써지고 완성되면 날아가는 모습을 반복해서 보여 준다.
-// 사진이나 이미지 생성 없이 CSS만으로 움직인다. 움직임을 줄이도록 설정한 사용자에게는 완성된 모습으로 멈춰 있다.
+// 움직임은 CSS만으로 만들고, 배경에만 사진(public/hero-network.webp)을 깐다. 움직임을 줄이도록 설정한 사용자에게는 완성된 모습으로 멈춰 있다.
+import Image from "next/image";
+
 const LANGUAGE_CHIPS = ["영어", "중국어", "일본어"] as const;
 
 export default function HeroAnimation() {
   return (
     <div
       aria-hidden="true"
-      className="relative flex h-full min-h-[280px] w-full items-center justify-center overflow-hidden rounded-[28px] bg-gradient-to-br from-[#1d2b64] via-[#17224f] to-[#0c1536] p-6 sm:p-8"
+      className="relative flex h-full min-h-[320px] w-full items-end justify-center overflow-hidden rounded-[28px] bg-gradient-to-br from-[#1d2b64] via-[#17224f] to-[#0c1536] p-6 sm:p-8"
     >
-      {/* 배경 장식 */}
-      <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/5" />
-      <div className="absolute -bottom-20 -left-10 h-64 w-64 rounded-full bg-white/5" />
+      {/* 배경 사진: 지구와 연결선. 위에 남색을 덮어 카드 글자가 잘 보이게 하고, 아래쪽 사진 속 작은 글씨는 가린다. */}
+      <Image
+        src="/hero-network.webp"
+        alt=""
+        fill
+        priority
+        sizes="(min-width: 1024px) 50vw, 100vw"
+        className="object-cover object-top"
+      />
+            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#0c1536] to-transparent" />
 
       {/* 공문 카드 */}
-      <div className="relative w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl">
+      <div className="relative w-full max-w-sm rounded-2xl bg-white/95 p-4 shadow-2xl">
         <div className="flex items-center gap-2">
           {LANGUAGE_CHIPS.map((label, index) => (
             <span
