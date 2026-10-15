@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function WritePage() {
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6">
+    <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
           공문 작성하기
