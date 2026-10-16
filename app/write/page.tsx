@@ -16,12 +16,20 @@ export default function WritePage() {
         <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
           공문 작성하기
         </h1>
-        <Link
-          href="/"
-          className="inline-flex h-14 items-center rounded-xl border-2 border-foreground/30 px-8 text-xl font-extrabold transition hover:bg-foreground/10"
-        >
-          홈으로
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/write/pdf"
+            className="inline-flex h-14 items-center rounded-xl bg-accent px-8 text-xl font-extrabold text-accent-foreground transition hover:opacity-90"
+          >
+            PDF로 만들기
+          </Link>
+          <Link
+            href="/"
+            className="inline-flex h-14 items-center rounded-xl border-2 border-foreground/30 px-8 text-xl font-extrabold transition hover:bg-foreground/10"
+          >
+            홈으로
+          </Link>
+        </div>
       </header>
 
       <p className="text-lg font-extrabold">
