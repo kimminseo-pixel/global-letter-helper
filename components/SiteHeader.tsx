@@ -4,7 +4,7 @@ import Link from "next/link";
 
 const MENUS = [
   { href: "/", label: "홈" },
-  { href: "/write", label: "공문 작성하기" },
+  { href: "/write", label: "서한 작성하기" },
 ] as const;
 
 export default function SiteHeader() {

@@ -6,7 +6,7 @@ import LetterForm from "@/components/LetterForm";
 import Notice from "@/components/Notice";
 
 export const metadata: Metadata = {
-  title: "공문 작성하기 · 글로벌 공문 도우미",
+  title: "서한 작성하기 · 글로벌 공문 도우미",
 };
 
 export default function WritePage() {
@@ -14,7 +14,7 @@ export default function WritePage() {
     <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
-          공문 작성하기
+          서한 작성하기
         </h1>
         <div className="flex flex-wrap items-center gap-3">
           <Link

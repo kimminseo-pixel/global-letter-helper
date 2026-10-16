@@ -1,4 +1,4 @@
-// Design Ref: §1 화면 구성 — 시작 화면. "공문 작성하기"로 작성 화면(/write)에 들어간다.
+// Design Ref: §1 화면 구성 — 시작 화면. "서한 작성하기"로 작성 화면(/write)에 들어간다.
 // 구성: 큰 한 줄 메시지(이미지 위) → 한 번에 하나씩 전하는 안내 블록 → 이용 안내. 말투는 "~해요" 체로 쓴다.
 import Link from "next/link";
 
@@ -42,7 +42,7 @@ export default function Home() {
               href="/write"
               className="inline-flex h-16 items-center justify-center whitespace-nowrap rounded-2xl bg-accent px-12 text-2xl font-extrabold text-accent-foreground shadow-xl transition hover:scale-105 hover:opacity-95 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent sm:h-20 sm:rounded-3xl sm:px-14 sm:text-3xl"
             >
-              공문 작성하기
+              서한 작성하기
             </Link>
           </div>
         </div>

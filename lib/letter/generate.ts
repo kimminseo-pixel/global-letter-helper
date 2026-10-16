@@ -154,6 +154,19 @@ export async function generateLetter(
         parts.body = stripPlaceholders(parts.body);
         parts.senderBlock = stripPlaceholders(parts.senderBlock);
       }
+      // 맺음말(Yours sincerely 등)이 본문 끝과 발신 부분 첫 줄에 겹치면 발신 쪽 것을 뺀다.
+      if (parts !== null) {
+        const lastBodyLine = parts.body.trim().split("\n").pop()?.trim() ?? "";
+        const senderLines = parts.senderBlock.trim().split("\n");
+        while (
+          senderLines.length > 0 &&
+          lastBodyLine !== "" &&
+          senderLines[0].trim() === lastBodyLine
+        ) {
+          senderLines.shift();
+        }
+        parts.senderBlock = senderLines.join("\n").trim();
+      }
       // 수신 부분에 인사말(Dear …)이 섞여 들어오면 본문 인사말과 겹치므로 그 줄만 뺀다.
       if (parts !== null && /^\s*Dear\b/i.test(parts.body)) {
         parts.recipientBlock = parts.recipientBlock
