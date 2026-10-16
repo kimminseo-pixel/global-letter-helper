@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 글로벌 공문 도우미
 
-## Getting Started
+외국 정부부처·기업·국제기구에 보낼 **공식 서한(공문) 초안**을 만들어 주는 웹 서비스입니다.
+담당자가 언어·문체·대상을 고르고 요청 사항을 짧게 적으면, AI가 격식에 맞는 외국어 초안과 한국어 확인본을 함께 만들어 줍니다.
 
-First, run the development server:
+> AI가 만든 초안입니다. 보내기 전에 이름·기관명·직함·날짜 같은 내용을 반드시 사람이 확인해 주세요.
+
+## 주요 기능
+
+- **서한 작성하기** (`/write`)
+  - 출력 언어: 영어 · 중국어(간체/번체) · 일본어
+  - 문체(일반 업무 · 공식 · 최고 격식), 대상 기관(정부기관 · 기업 · 기타), 작성 목적(행사 참석 요청 · 협조 요청 · 회신 · 감사 · 기타) 선택
+  - 요청 사항·받는 곳·일시·장소 등을 단답으로 입력하면 언어별 서한 형식에 맞춰 제목과 본문을 작성
+  - 받는 곳을 **+ 추가하기**로 최대 5곳까지 늘려 한 번에 여러 통 작성
+  - 받는 나라 입력 시 언어·행사 제목(예: "한-아프리카")에 맞는 나라를 먼저 추천하고, 웹 검색으로 장관 이름을 참고용으로 미리 보기(출처 링크 포함)
+  - 임시저장(이 브라우저에만 저장, 7일 보관)
+- **PDF로 만들기** (`/write/pdf`): 사업 계획서·세미나 포스터 PDF를 올리면 내용을 읽어 서한 초안 작성
+- **결과 화면**: 제목·본문 수정, 복사, Word(.docx)·한글(.hwpx) 저장, 한국어 확인본, 검토 포인트, 빠진 항목 제안
+
+## AI 작성 규칙 (요약)
+
+- 입력에 없는 날짜·금액·이름·수치는 지어내지 않고, 빠진 항목은 따로 제안합니다.
+- "Dear Sir or Madam" 같은 불특정 호칭을 쓰지 않습니다(받는 곳 입력 필수).
+- 격식은 지키되 짧고 읽기 쉽게(본문 3~4문단) 씁니다. 구어체·줄임말은 쓰지 않습니다.
+- 한국어 확인본은 외국어 초안과 같은 뜻으로, 더하거나 빼지 않습니다.
+
+## 기술 스택
+
+- [Next.js](https://nextjs.org) 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4
+- OpenAI Responses API(`openai` SDK, 기본 모델 `gpt-4.1-mini`) · zod 입력 검증
+- `docx`(Word 저장), `@ssabrojs/hwpxjs`(한글 .hwpx 저장)
+- 배포: Vercel
+
+## 개인정보·보안
+
+- 로그인 없이 쓰는 서비스입니다. 대신 서버에서 입력을 다시 검증하고, 접속자별 호출 횟수를 제한합니다(1분 8회).
+- 입력 내용과 생성 결과는 서버에 저장하지 않습니다(OpenAI 호출도 `store: false`).
+- 입력 내용은 외부 AI 서비스로 전송됩니다. **대외비·기밀 내용은 입력하지 마세요.**
+- API 키는 서버에서만 읽으며, 저장소에 포함되지 않습니다.
+
+## 직접 실행하기
+
+```bash
+npm install
+```
+
+프로젝트 루트에 `.env` 파일을 만들고 OpenAI API 키를 넣습니다.
+
+```
+OPENAI_API_KEY=발급받은_키
+# 선택: 다른 모델을 쓰려면
+# OPENAI_MODEL=gpt-4.1
+```
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+브라우저에서 http://localhost:3000 을 엽니다.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| 명령 | 설명 |
+|---|---|
+| `npm run dev` | 개발 서버 |
+| `npm run build` | 프로덕션 빌드 |
+| `npm run lint` | 코드 검사 |
+| `node scripts/eval-letters.ts` | 테스트 서한 20건 생성·기록(개발 서버 실행 중일 때) |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 문서
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [PRD.md](PRD.md) 서비스 기획서 · [PLAN.md](PLAN.md) 구현 계획 · [DESIGN.md](DESIGN.md) 설계 · [CHECK.md](CHECK.md) 점검 결과
+- [eval-results/](eval-results) 테스트 서한 평가 기록

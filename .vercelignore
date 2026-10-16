@@ -1,0 +1,6 @@
+.env*
+.bkit
+.claude
+trash-can
+eval-results
+scripts
