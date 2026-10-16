@@ -220,7 +220,7 @@ export default function PdfLetterForm() {
           disabled={loading}
           className="h-14 rounded-2xl bg-accent text-xl font-extrabold text-accent-foreground shadow-lg transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {loading ? "PDF를 읽고 공문을 만드는 중이에요…" : "PDF로 공문 만들기"}
+          {loading ? "PDF를 읽고 공문을 만드는 중이에요…" : "PDF로 서한 작성하기"}
         </button>
       </form>
 

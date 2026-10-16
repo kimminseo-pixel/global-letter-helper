@@ -6,7 +6,7 @@ import Notice from "@/components/Notice";
 import PdfLetterForm from "@/components/PdfLetterForm";
 
 export const metadata: Metadata = {
-  title: "PDF로 공문 만들기 · 글로벌 공문 도우미",
+  title: "PDF로 서한 작성하기 · 글로벌 공문 도우미",
 };
 
 export default function WritePdfPage() {
@@ -14,7 +14,7 @@ export default function WritePdfPage() {
     <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-extrabold tracking-tight sm:text-4xl">
-          PDF로 공문 만들기
+          PDF로 서한 작성하기
         </h1>
         <Link
           href="/write"
