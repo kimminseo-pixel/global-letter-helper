@@ -31,6 +31,7 @@ import {
   type LetterResponse,
 } from "@/lib/letter/schema";
 
+import { PREFILL_EVENT, PREFILL_KEY } from "./HeaderQuickStart";
 import LetterResult from "./LetterResult";
 
 type FormState = {
@@ -415,6 +416,35 @@ export default function LetterForm() {
   useEffect(() => {
     const id = window.setTimeout(() => setSavedDraft(readDraft()), 0);
     return () => window.clearTimeout(id);
+  }, []);
+
+  // 머리글 입력창에 적은 요청 사항을 "요청 사항" 칸에 채운다.
+  useEffect(() => {
+    const fill = (text: string) => {
+      const purpose = text.trim().slice(0, LIMITS.purpose);
+      if (purpose !== "") setForm((prev) => ({ ...prev, purpose }));
+    };
+    const id = window.setTimeout(() => {
+      try {
+        const saved = window.sessionStorage.getItem(PREFILL_KEY);
+        if (saved !== null) {
+          window.sessionStorage.removeItem(PREFILL_KEY);
+          fill(saved);
+        }
+      } catch {
+        /* 저장소를 쓸 수 없으면 채우지 않는다 */
+      }
+    }, 0);
+    const onPrefill = (event: Event) => {
+      if (event instanceof CustomEvent && typeof event.detail === "string") {
+        fill(event.detail);
+      }
+    };
+    window.addEventListener(PREFILL_EVENT, onPrefill);
+    return () => {
+      window.clearTimeout(id);
+      window.removeEventListener(PREFILL_EVENT, onPrefill);
+    };
   }, []);
 
   // 다른 화면에 갔다 돌아오면 처음 상태로 새로 시작한다(화면이 숨겨질 때 입력을 비운다).
