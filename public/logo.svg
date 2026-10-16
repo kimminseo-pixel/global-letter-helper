@@ -1,14 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="글로벌 공문 도우미 로고">
+  <!-- 남색 바탕에 흰 봉투, 오른쪽 위에 작은 지구 배지: 해외로 보내는 서한 -->
   <rect width="64" height="64" rx="16" fill="#1d2b64"/>
-  <!-- 공문(접힌 모서리가 있는 종이) -->
-  <path d="M19 12h19l9 9v31a2 2 0 0 1-2 2H19a2 2 0 0 1-2-2V14a2 2 0 0 1 2-2Z" fill="#ffffff"/>
-  <path d="M38 12v7a2 2 0 0 0 2 2h7Z" fill="#c7cfee"/>
-  <g stroke="#1d2b64" stroke-width="3" stroke-linecap="round">
-    <path d="M23 29h18"/>
-    <path d="M23 36h18"/>
-    <path d="M23 43h10"/>
+  <rect x="12" y="19" width="40" height="28" rx="4" fill="#ffffff"/>
+  <path d="M13 21l19 14 19-14" fill="none" stroke="#1d2b64" stroke-width="2.6" stroke-linejoin="round"/>
+  <circle cx="47" cy="18" r="9" fill="#1d2b64" stroke="#ffffff" stroke-width="2"/>
+  <g fill="none" stroke="#ffffff" stroke-width="1.6">
+    <ellipse cx="47" cy="18" rx="3.6" ry="7.5"/>
+    <path d="M39.5 18h15"/>
   </g>
-  <!-- 글로벌: 종이를 감싸는 궤도 -->
-  <path d="M8 44c6 8 20 12 34 8s16-14 14-24" fill="none" stroke="#7f93e0" stroke-width="3.5" stroke-linecap="round"/>
-  <circle cx="56" cy="28" r="3.5" fill="#ffffff"/>
 </svg>
