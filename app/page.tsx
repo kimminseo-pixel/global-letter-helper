@@ -27,7 +27,7 @@ export default function Home() {
       {/* 왼쪽: 한 줄 메시지와 큰 버튼, 오른쪽: 공문이 써지는 움직이는 그림 */}
       <section className="grid items-stretch gap-6 lg:grid-cols-2">
         <div className="flex flex-col justify-center gap-6 rounded-[28px] bg-[rgba(7,25,76,0.05)] p-6 sm:p-10">
-          <h1 className="break-keep text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
+          <h1 className="break-keep text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl">
             외국에 보낼 공식 서한
             <br />
             <span className="whitespace-nowrap">격식에 맞게 한 번에</span>
@@ -40,7 +40,7 @@ export default function Home() {
           <div>
             <Link
               href="/write"
-              className="inline-flex h-16 items-center justify-center whitespace-nowrap rounded-2xl bg-accent px-12 text-2xl font-extrabold text-accent-foreground shadow-xl transition hover:scale-105 hover:opacity-95 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent sm:h-20 sm:rounded-3xl sm:px-14 sm:text-3xl"
+              className="inline-flex h-14 items-center justify-center whitespace-nowrap rounded-2xl bg-accent px-8 text-xl font-extrabold text-accent-foreground shadow-xl transition hover:scale-105 hover:opacity-95 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent sm:h-20 sm:rounded-3xl sm:px-14 sm:text-3xl"
             >
               서한 작성하기
             </Link>

@@ -25,9 +25,17 @@
   }
 }
 
-/* 글자를 기본 18px로 키우고(rem 기준 전체 확대) 모든 글씨를 볼드로 표시한다. */
+/* 글자 기준 크기: 휴대폰은 16px, 태블릿·PC(640px 이상)는 18px로 키운다(rem 기준 전체 비율 유지). */
 html {
-  font-size: 18px;
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (min-width: 640px) {
+  html {
+    font-size: 18px;
+  }
 }
 
 body {
@@ -39,6 +47,9 @@ body {
     system-ui, sans-serif;
   font-weight: 700;
   line-height: 1.6;
+  /* 한국어는 단어 중간에서 줄을 바꾸지 않고, 칸보다 긴 영문·주소만 끊는다. */
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 /* 시작 화면 대표 이미지: 손으로 쓰는 장면 → 온라인으로 쓰는 장면이 9초 주기로 부드럽게 바뀐다. */

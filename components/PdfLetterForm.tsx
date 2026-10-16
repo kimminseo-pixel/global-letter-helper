@@ -116,7 +116,7 @@ export default function PdfLetterForm() {
   }
 
   return (
-    <div className="grid items-start gap-8 lg:grid-cols-2">
+    <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2 [&>*]:min-w-0">
       <form
         onSubmit={handleSubmit}
         className="flex flex-col gap-6 rounded-3xl border-2 border-foreground/15 p-5 sm:p-7"
@@ -130,7 +130,7 @@ export default function PdfLetterForm() {
             type="file"
             accept="application/pdf,.pdf"
             onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-            className="rounded-xl border-2 border-dashed border-foreground/30 p-4 text-base file:mr-4 file:rounded-lg file:border-0 file:bg-accent file:px-4 file:py-2 file:font-extrabold file:text-accent-foreground"
+            className="w-full min-w-0 rounded-xl border-2 border-dashed border-foreground/30 p-4 text-base file:mr-4 file:rounded-lg file:border-0 file:bg-accent file:px-4 file:py-2 file:font-extrabold file:text-accent-foreground"
           />
           <p className="text-sm text-foreground/60">
             사업 계획서, 세미나 포스터 등 · 4MB 이하 · 올린 파일은 저장하지

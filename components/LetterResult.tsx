@@ -137,7 +137,7 @@ export default function LetterResult({
             value={subject}
             onChange={(event) => setSubject(event.target.value)}
             aria-label="공문 제목"
-            className="h-12 min-w-0 flex-1 rounded-xl border-2 border-foreground/30 bg-background px-4 text-base focus-visible:border-accent focus-visible:outline-none"
+            className="h-12 min-w-0 flex-1 basis-full rounded-xl border-2 sm:basis-auto border-foreground/30 bg-background px-4 text-base focus-visible:border-accent focus-visible:outline-none"
           />
           <button
             type="button"
@@ -163,32 +163,32 @@ export default function LetterResult({
               ? `비어 있는 [ ]가 ${blanks}곳 있습니다. 아래 "빠진 항목 제안"을 확인해 채워 주세요.`
               : "입력하지 않은 항목은 초안에서 생략했습니다."}
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap">
             <button
               type="button"
               onClick={() => copy("draft")}
-              className="h-12 rounded-xl border-2 border-foreground/30 px-5 text-base font-extrabold transition hover:bg-foreground/10"
+              className="min-h-12 rounded-xl py-2 leading-snug border-2 border-foreground/30 px-5 text-base font-extrabold transition hover:bg-foreground/10"
             >
               {copied === "draft" ? "복사됨 ✓" : "내용 복사"}
             </button>
             <button
               type="button"
               onClick={() => copy("all")}
-              className="h-12 rounded-xl bg-accent px-7 text-base font-extrabold text-accent-foreground transition hover:opacity-90"
+              className="min-h-12 rounded-xl py-2 leading-snug bg-accent px-3 text-base sm:px-7 font-extrabold text-accent-foreground transition hover:opacity-90"
             >
               {copied === "all" ? "복사됨 ✓" : "제목 포함 전체 복사"}
             </button>
             <button
               type="button"
               onClick={() => saveFile("word")}
-              className="h-12 rounded-xl border-2 border-accent px-5 text-base font-extrabold text-accent transition hover:bg-accent/10"
+              className="min-h-12 rounded-xl py-2 leading-snug border-2 border-accent px-5 text-base font-extrabold text-accent transition hover:bg-accent/10"
             >
               Word로 저장 (.docx)
             </button>
             <button
               type="button"
               onClick={() => saveFile("hwp")}
-              className="h-12 rounded-xl border-2 border-accent px-5 text-base font-extrabold text-accent transition hover:bg-accent/10"
+              className="min-h-12 rounded-xl py-2 leading-snug border-2 border-accent px-5 text-base font-extrabold text-accent transition hover:bg-accent/10"
             >
               한글로 저장 (.hwpx)
             </button>

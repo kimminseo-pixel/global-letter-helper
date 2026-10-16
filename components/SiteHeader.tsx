@@ -10,7 +10,7 @@ const MENUS = [
 export default function SiteHeader() {
   return (
     <header>
-      <div className="bg-[#1d2b64] px-4 py-2 text-center text-sm font-extrabold text-white sm:px-6">
+      <div className="bg-[#1d2b64] px-4 py-2 text-center text-xs font-extrabold text-white sm:px-6 sm:text-sm">
         AI가 만든 초안이에요. 보내기 전에 꼭 확인해 주세요.
       </div>
       <div className="bg-foreground/5">
@@ -22,9 +22,9 @@ export default function SiteHeader() {
               width={56}
               height={56}
               priority
-              className="h-14 w-14 rounded-2xl"
+              className="h-11 w-11 rounded-xl sm:h-14 sm:w-14 sm:rounded-2xl"
             />
-            <span className="text-2xl font-extrabold tracking-tight text-accent sm:text-4xl">
+            <span className="text-xl font-extrabold tracking-tight text-accent sm:text-4xl">
               글로벌 공문 도우미
             </span>
           </Link>
@@ -34,7 +34,7 @@ export default function SiteHeader() {
                 <li key={menu.href}>
                   <Link
                     href={menu.href}
-                    className="rounded-full px-6 py-3 text-2xl font-extrabold sm:text-3xl transition hover:bg-foreground/10"
+                    className="rounded-full px-3 py-2 text-lg font-extrabold sm:px-6 sm:py-3 sm:text-3xl transition hover:bg-foreground/10"
                   >
                     {menu.label}
                   </Link>

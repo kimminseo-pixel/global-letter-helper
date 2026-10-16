@@ -778,7 +778,7 @@ export default function LetterForm() {
         </div>
       ) : null}
 
-      <div className="grid items-start gap-8 lg:grid-cols-2">
+      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2 [&>*]:min-w-0">
         {/* 왼쪽: 선택·입력 */}
         <form
           onSubmit={handleSubmit}
@@ -1065,49 +1065,59 @@ export default function LetterForm() {
               <div className="flex flex-col gap-1.5 sm:col-span-2">
                 <span className="text-base font-extrabold">장소</span>
                 <div className="grid gap-3 sm:grid-cols-3">
-                  <input
-                    type="text"
-                    aria-label="장소 국가"
-                    list="place-country-list"
-                    value={form.placeCountry}
-                    maxLength={LIMITS.place}
-                    onChange={(event) => {
-                      const value = event.target.value;
-                      setForm((prev) => ({
-                        ...prev,
-                        placeCountry: value,
-                        // 목록에서 다른 국가를 고르면 이전 국가의 도시는 비운다.
-                        placeCity:
-                          COUNTRIES.includes(value) &&
-                          !(CITIES[value] ?? []).includes(prev.placeCity)
-                            ? ""
-                            : prev.placeCity,
-                      }));
-                    }}
-                    className={FIELD_CLASS}
-                  />
-                  <input
-                    type="text"
-                    aria-label="장소 도시"
-                    list="place-city-list"
-                    value={form.placeCity}
-                    maxLength={LIMITS.place}
-                    onChange={(event) => set("placeCity")(event.target.value)}
-                    className={FIELD_CLASS}
-                  />
-                  <input
-                    type="text"
-                    aria-label="세부 장소"
-                    value={form.placeDetail}
-                    maxLength={LIMITS.place}
-                    onChange={(event) => set("placeDetail")(event.target.value)}
-                    className={FIELD_CLASS}
-                  />
-                </div>
-                <div className="grid grid-cols-3 gap-3 text-xs font-bold text-foreground/60">
-                  <span>국가</span>
-                  <span>도시</span>
-                  <span>세부 장소</span>
+                  <div className="flex flex-col gap-1">
+                    <input
+                      type="text"
+                      aria-label="장소 국가"
+                      list="place-country-list"
+                      value={form.placeCountry}
+                      maxLength={LIMITS.place}
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        setForm((prev) => ({
+                          ...prev,
+                          placeCountry: value,
+                          // 목록에서 다른 국가를 고르면 이전 국가의 도시는 비운다.
+                          placeCity:
+                            COUNTRIES.includes(value) &&
+                            !(CITIES[value] ?? []).includes(prev.placeCity)
+                              ? ""
+                              : prev.placeCity,
+                        }));
+                      }}
+                      className={FIELD_CLASS}
+                    />
+                    <span className="text-xs font-bold text-foreground/60">
+                      국가
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <input
+                      type="text"
+                      aria-label="장소 도시"
+                      list="place-city-list"
+                      value={form.placeCity}
+                      maxLength={LIMITS.place}
+                      onChange={(event) => set("placeCity")(event.target.value)}
+                      className={FIELD_CLASS}
+                    />
+                    <span className="text-xs font-bold text-foreground/60">
+                      도시
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <input
+                      type="text"
+                      aria-label="세부 장소"
+                      value={form.placeDetail}
+                      maxLength={LIMITS.place}
+                      onChange={(event) => set("placeDetail")(event.target.value)}
+                      className={FIELD_CLASS}
+                    />
+                    <span className="text-xs font-bold text-foreground/60">
+                      세부 장소
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -1248,14 +1258,14 @@ export default function LetterForm() {
           {!result && !loading ? (
             <div className="flex flex-col gap-4 rounded-2xl border-2 border-foreground/15 p-5">
               <div className="flex items-center justify-between gap-3">
-                <h2 className="text-lg font-extrabold">입력 내용 요약</h2>
+                <h2 className="shrink-0 text-lg font-extrabold">입력 내용 요약</h2>
                 <span className="rounded-full bg-accent/15 px-3 py-1 text-xs font-extrabold text-accent">
                   AI가 공문으로 만들어요
                 </span>
               </div>
               {summary.length === 0 ? (
                 <div className="flex min-h-64 items-center justify-center rounded-xl border-2 border-dashed border-foreground/25 p-6 text-center text-base text-foreground/60">
-                  왼쪽에서 선택하고 입력하면 이곳에 내용이 모여요.
+                  선택하고 입력하면 이곳에 내용이 모여요.
                 </div>
               ) : (
                 <dl className="flex flex-col divide-y divide-foreground/10 rounded-xl bg-foreground/5">
@@ -1274,7 +1284,7 @@ export default function LetterForm() {
               )}
               <p className="text-sm text-foreground/70">
                 입력한 내용을 AI가 모아서 격식에 맞는 공문으로 만들어요. 다
-                적었다면 왼쪽 아래{" "}
+                적었다면{" "}
                 <span className="font-extrabold">AI로 공문 만들기</span>를 눌러
                 주세요.
               </p>
