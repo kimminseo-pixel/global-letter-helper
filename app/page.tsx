@@ -28,7 +28,7 @@ export default function Home() {
       <section className="grid items-stretch gap-6 lg:grid-cols-2">
         <div className="flex flex-col justify-center gap-6 rounded-[28px] bg-[rgba(7,25,76,0.05)] p-6 sm:p-10">
           <h1 className="break-keep text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
-            외국에 보낼 공문
+            외국에 보낼 공식 서한
             <br />
             <span className="whitespace-nowrap">격식에 맞게 한 번에</span>
           </h1>
